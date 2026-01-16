@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-A CLI tool for generating monorepo projects from pre-created templates. The tool discovers available templates in the `templates/` directory, lets users multi-select which ones to include, and scaffolds a complete monorepo structure with build orchestration (Turborepo/Nx) and optional features like ESLint, Prettier, Changesets, and GitHub Actions.
+A CLI tool for generating TypeScript monorepo projects from pre-created templates. The tool discovers available templates in the `templates/` directory, lets users multi-select which ones to include, and scaffolds a complete pnpm workspace with optional features like ESLint, Prettier, Changesets, and GitHub Actions.
 
 ## Commands
 
@@ -35,9 +35,8 @@ The CLI is a single-file interactive prompt-based generator that:
 
 1. **Collects configuration** via `prompts`:
    - Monorepo name and workspace prefix (e.g., `@my-org`)
-   - Build tool selection (Turborepo, Nx, or none)
-   - TypeScript preference
    - Features (ESLint, Prettier, Changesets, Husky, GitHub Actions, Docker)
+   - Note: TypeScript is always enabled, pnpm scripts are always used (no Turborepo/Nx)
 
 2. **Discovers available templates**:
    - Scans `templates/` directory for subdirectories (excluding `base/` and `features/`)
@@ -58,7 +57,7 @@ The CLI is a single-file interactive prompt-based generator that:
 
 - `discoverTemplates()`: Scans templates directory and reads template.json metadata for each template
 - `createFromTemplate()`: Copies a template to the appropriate directory (apps/ or packages/) and updates package.json name
-- `createRootStructure()`: Sets up root package.json, workspace config (pnpm-workspace.yaml), build tool config (turbo.json/nx.json), .gitignore, and README
+- `createRootStructure()`: Sets up root package.json with pnpm scripts, pnpm-workspace.yaml, .gitignore, and README
 - `scaffoldMonorepo()`: Orchestrates the monorepo creation by calling the above functions
 - `addFeatures()`: Copies feature configurations from `templates/features/*` and initializes changesets
 
@@ -95,9 +94,19 @@ The `templates/` directory is copied alongside the built CLI during distribution
 
 ## Important Patterns
 
-### Package Manager
-- Only supports `pnpm` (hardcoded in options)
+### Package Manager and Build System
+- Only supports `pnpm` (hardcoded)
 - Uses `pnpm-workspace.yaml` for workspace configuration
+- Root scripts use pnpm's built-in commands:
+  - `pnpm run --parallel dev` - Run dev in all workspaces in parallel
+  - `pnpm run -r build` - Run build recursively in dependency order
+  - `pnpm run -r lint/test/clean` - Run other commands recursively
+- No build orchestration tools (Turborepo/Nx) - uses pnpm directly
+
+### TypeScript
+- TypeScript is always enabled
+- Root devDependencies includes `typescript: ^5.3.0`
+- Templates should include their own TypeScript configurations
 
 ### Module System
 - The CLI uses ES modules (`"type": "module"` in package.json)

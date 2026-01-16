@@ -68,8 +68,6 @@ interface MonorepoOptions {
   monorepoName: string;
   workspacePrefix: string;
   packageManager: 'pnpm';
-  buildTool: 'turborepo' | 'nx' | 'none';
-  typescript: boolean;
   selectedTemplates: TemplateInfo[];
   features: string[];
 }
@@ -108,34 +106,6 @@ async function create(): Promise<void> {
       initial: '@my-org',
       validate: (value: string) => 
         value.startsWith('@') ? true : 'Prefix should start with @'
-    },
-    // {
-    //   type: 'select',
-    //   name: 'packageManager',
-    //   message: 'Package manager:',
-    //   choices: [
-    //     { title: 'pnpm (recommended for monorepos)', value: 'pnpm' },
-    //     { title: 'npm', value: 'npm' },
-    //     { title: 'yarn', value: 'yarn' }
-    //   ],
-    //   initial: 0
-    // },
-    {
-      type: 'select',
-      name: 'buildTool',
-      message: 'Build orchestration:',
-      choices: [
-        { title: 'Turborepo (recommended)', value: 'turborepo' },
-        { title: 'Nx', value: 'nx' },
-        { title: 'None (manual scripts)', value: 'none' }
-      ],
-      initial: 0
-    },
-    {
-      type: 'confirm',
-      name: 'typescript',
-      message: 'Use TypeScript?',
-      initial: true
     },
     {
       type: 'multiselect',
@@ -279,89 +249,22 @@ async function createRootStructure(targetDir: string, options: MonorepoOptions):
     version: '1.0.0',
     private: true,
     scripts: {
-      dev: 'echo "Select dev script based on build tool"',
-      build: 'echo "Select build script based on build tool"',
-      lint: 'echo "Select lint script based on build tool"',
-      test: 'echo "Select test script based on build tool"'
+      dev: 'pnpm run --parallel dev',
+      build: 'pnpm run -r build',
+      lint: 'pnpm run -r lint',
+      test: 'pnpm run -r test',
+      clean: 'pnpm run -r clean'
     },
-    devDependencies: {}
+    devDependencies: {
+      typescript: '^5.3.0'
+    }
   };
 
-  // Configure based on package manager
-  if (options.packageManager === 'pnpm') {
-    // pnpm-workspace.yaml
-    await fs.writeFile(
-      path.join(targetDir, 'pnpm-workspace.yaml'),
-      `packages:\n  - 'apps/*'\n  - 'packages/*'\n`
-    );
-  } else if (options.packageManager === 'npm' || options.packageManager === 'yarn') {
-    rootPackageJson.workspaces = ['apps/*', 'packages/*'];
-  }
-
-  // Configure build tool
-  if (options.buildTool === 'turborepo') {
-    rootPackageJson.scripts = {
-      dev: 'turbo run dev',
-      build: 'turbo run build',
-      lint: 'turbo run lint',
-      test: 'turbo run test',
-      clean: 'turbo run clean'
-    };
-    rootPackageJson.devDependencies!.turbo = '^1.11.0';
-
-    // turbo.json
-    const turboConfig = {
-      $schema: 'https://turbo.build/schema.json',
-      globalDependencies: ['**/.env.*local'],
-      pipeline: {
-        build: {
-          dependsOn: ['^build'],
-          outputs: ['dist/**', '.next/**', 'build/**']
-        },
-        dev: {
-          cache: false,
-          persistent: true
-        },
-        lint: {
-          dependsOn: ['^lint']
-        },
-        test: {
-          dependsOn: ['^build']
-        },
-        clean: {
-          cache: false
-        }
-      }
-    };
-    await fs.writeJson(path.join(targetDir, 'turbo.json'), turboConfig, { spaces: 2 });
-
-  } else if (options.buildTool === 'nx') {
-    rootPackageJson.scripts = {
-      dev: 'nx run-many --target=dev --all',
-      build: 'nx run-many --target=build --all',
-      lint: 'nx run-many --target=lint --all',
-      test: 'nx run-many --target=test --all'
-    };
-    rootPackageJson.devDependencies!.nx = '^17.0.0';
-    
-    // nx.json
-    const nxConfig = {
-      extends: 'nx/presets/npm.json',
-      tasksRunnerOptions: {
-        default: {
-          runner: 'nx/tasks-runners/default',
-          options: {
-            cacheableOperations: ['build', 'lint', 'test']
-          }
-        }
-      }
-    };
-    await fs.writeJson(path.join(targetDir, 'nx.json'), nxConfig, { spaces: 2 });
-  }
-
-  if (options.typescript) {
-    rootPackageJson.devDependencies!.typescript = '^5.3.0';
-  }
+  // pnpm-workspace.yaml
+  await fs.writeFile(
+    path.join(targetDir, 'pnpm-workspace.yaml'),
+    `packages:\n  - 'apps/*'\n  - 'packages/*'\n`
+  );
 
   await fs.writeJson(path.join(targetDir, 'package.json'), rootPackageJson, { spaces: 2 });
 
@@ -371,8 +274,6 @@ node_modules
 dist
 build
 .next
-.turbo
-.nx
 *.log
 .env*.local
 .DS_Store
@@ -452,14 +353,7 @@ function printNextSteps(options: MonorepoOptions): void {
   }
 
   console.log(chalk.gray('📚 Documentation:'));
-  if (options.buildTool === 'turborepo') {
-    console.log(chalk.white('  Turborepo: https://turbo.build/repo/docs'));
-  } else if (options.buildTool === 'nx') {
-    console.log(chalk.white('  Nx: https://nx.dev'));
-  }
-  if (options.packageManager === 'pnpm') {
-    console.log(chalk.white('  pnpm workspaces: https://pnpm.io/workspaces'));
-  }
+  console.log(chalk.white('  pnpm workspaces: https://pnpm.io/workspaces'));
 }
 
 create().catch((error: Error) => {

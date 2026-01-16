@@ -28,7 +28,8 @@ async function discoverTemplates(templatesDir: string): Promise<TemplateInfo[]> 
       let metadata = {
         name: entry.name,
         type: 'package' as const,
-        description: entry.name
+        description: entry.name,
+        default: false
       };
 
       // Read template.json if it exists
@@ -38,7 +39,8 @@ async function discoverTemplates(templatesDir: string): Promise<TemplateInfo[]> 
           metadata = {
             name: fileContent.name || entry.name,
             type: fileContent.type || 'package',
-            description: fileContent.description || entry.name
+            description: fileContent.description || entry.name,
+            default: fileContent.default || false
           };
         } catch (error) {
           console.log(chalk.yellow(`⚠️  Warning: Invalid template.json in ${entry.name}, using defaults`));
@@ -47,7 +49,7 @@ async function discoverTemplates(templatesDir: string): Promise<TemplateInfo[]> 
 
       templates.push({
         ...metadata,
-        path: templatePath
+        path: templatePath,
       });
     }
   } catch (error) {
@@ -62,7 +64,7 @@ interface TemplateInfo {
   type: 'app' | 'package';
   description: string;
   path: string;
-  default?: boolean;
+  default: boolean;
 }
 
 interface MonorepoOptions {

@@ -1,30 +1,47 @@
-# create-my-template
+# template-cli
 
 A CLI tool to quickly scaffold production-ready TypeScript monorepos with pnpm workspaces.
 
 ## 🚀 Quick Start
 
-### Run directly from GitHub
+### Option 1: Run Directly from GitHub (Recommended for Users)
+
+Once this repo is pushed to GitHub, anyone can run:
 
 ```bash
 # Using pnpm (recommended)
-pnpm dlx github:yourusername/template-cli
+pnpm dlx github:mcorrigan89/template-cli
 
 # Using npx
-npx github:yourusername/template-cli
+npx github:mcorrigan89/template-cli
 ```
 
-### Or install globally
+
+### Option 2: Run Locally (Development)
 
 ```bash
-# Clone and install
-git clone https://github.com/yourusername/template-cli.git
+# Clone the repository
+git clone https://github.com/mcorrigan89/template-cli.git
 cd template-cli
+
+# Install dependencies
 pnpm install
+
+# Build the CLI
 pnpm build
 
 # Run it
 node bin/index.js
+```
+
+### Option 3: After Publishing to npm (Optional)
+
+If published to npm, users can run:
+
+```bash
+pnpm create my-template
+# or
+npm create my-template
 ```
 
 ## ✨ Features
@@ -131,6 +148,38 @@ Services are networked and dependencies are handled automatically.
 - **Node.js** 22+
 - **pnpm** 10+
 - **Docker** (optional, for containerized development)
+
+## 🧪 Testing Your CLI
+
+### Local Testing
+
+```bash
+# Build the CLI
+pnpm build
+
+# Test it locally
+node bin/index.js
+
+# Create a test project in /tmp
+cd /tmp
+node /path/to/template-cli/bin/index.js
+```
+
+### Testing from GitHub
+
+After pushing to GitHub:
+
+```bash
+# Test in a clean directory
+cd /tmp
+pnpm dlx github:mcorrigan89/template-cli
+
+# This will:
+# 1. Clone your repo
+# 2. Run `pnpm install` (triggers prepare script)
+# 3. Build the CLI automatically
+# 4. Execute the CLI
+```
 
 ## 🔧 Customization
 

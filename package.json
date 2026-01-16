@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "pnpm --filter create-my-template build",
-    "dev": "pnpm --filter create-my-template dev",
+    "dev": "pnpm --parallel --filter @template/server --filter @template/web run dev",
     "dev:server": "pnpm --filter @template/server dev",
     "dev:web": "pnpm --filter @template/web dev",
     "test:templates": "pnpm -r --filter './templates/*' run dev",

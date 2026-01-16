@@ -294,12 +294,27 @@ async function createRootStructure(targetDir: string, options: MonorepoOptions, 
 
   // Root package.json
   const hasAppTemplates = options.selectedTemplates.some(t => t.type === 'app');
+  const appTemplates = options.selectedTemplates.filter(t => t.type === 'app');
+
+  // Generate app-specific dev commands
+  const appDevScripts: Record<string, string> = {};
+  appTemplates.forEach(template => {
+    appDevScripts[`dev:${template.name}`] = `pnpm --filter ${options.workspacePrefix}/${template.name} dev`;
+  });
+
+  // Generate dev:apps command if there are multiple apps
+  const devAppsCommand = appTemplates.length > 0
+    ? `pnpm --parallel ${appTemplates.map(t => `--filter ${options.workspacePrefix}/${t.name}`).join(' ')} run dev`
+    : undefined;
+
   const rootPackageJson: PackageJson = {
     name: options.monorepoName,
     version: '1.0.0',
     private: true,
     scripts: {
-      dev: 'pnpm run --parallel dev',
+      dev: devAppsCommand || 'pnpm run --parallel dev',
+      ...(devAppsCommand && { 'dev:all': 'pnpm run --parallel dev' }),
+      ...appDevScripts,
       build: 'pnpm run -r build',
       lint: 'pnpm run -r lint',
       test: 'pnpm run -r test',
@@ -369,6 +384,31 @@ ${options.packageManager} run docker:logs
 \`\`\``
     : '';
 
+  // Generate dev commands documentation
+  const devCommandsSection = appTemplates.length > 0
+    ? `
+
+## Development
+
+\`\`\`bash
+# Run all apps in parallel (recommended)
+${options.packageManager} run dev
+
+# Run all workspaces (apps + packages)
+${options.packageManager} run dev:all
+${appTemplates.map(t => `
+# Run ${t.name} only
+${options.packageManager} run dev:${t.name}`).join('')}
+\`\`\``
+    : `
+
+## Development
+
+\`\`\`bash
+# Run development
+${options.packageManager} run dev
+\`\`\``;
+
   const readme = `
 # ${options.monorepoName}
 
@@ -384,6 +424,7 @@ ${options.packageManager} run dev
 # Build all
 ${options.packageManager} run build
 \`\`\`
+${devCommandsSection}
 ${dockerSection}
 
 ## Structure

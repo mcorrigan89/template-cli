@@ -66,7 +66,7 @@ app.use(
   }),
 );
 
-app.get('/', (c) => c.text('Tax App!'));
+app.get('/', (c) => c.text('API!'));
 
 app.use('/rpc/*', async (c, next) => {
   const { matched, response } = await handler.handle(c.req.raw, {

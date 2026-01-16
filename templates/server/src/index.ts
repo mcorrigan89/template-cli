@@ -12,6 +12,9 @@ import { routerImplementation } from './routes/index.ts';
 import { logger } from '@template/logger';
 import { diContainer } from './lib/di.ts';
 import { AuthService, authSybmol } from './lib/auth.ts';
+import { getSharedEnv } from '@template/env/shared';
+
+const env = getSharedEnv()
 
 const handler = new RPCHandler(routerImplementation, {
   plugins: [
@@ -59,7 +62,7 @@ const app = new Hono();
 app.use(
   '/api/auth/*', // or replace with "*" to enable cors for all routes
   cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: [env.CLIENT_URL, env.SERVER_URL],
     allowHeaders: ['Content-Type', 'Authorization'],
     allowMethods: ['POST', 'GET', 'OPTIONS'],
     exposeHeaders: ['Content-Length'],

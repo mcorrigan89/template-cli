@@ -1,0 +1,5 @@
+{
+  "name": "env",
+  "type": "package",
+  "description": "Type-safe environment variable management with Zod validation"
+}

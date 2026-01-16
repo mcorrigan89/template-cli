@@ -21,6 +21,7 @@
     "@orpc/zod": "^1.13.2",
     "@template/contract": "workspace:*",
     "@template/database": "workspace:*",
+    "@template/env": "workspace:*",
     "@template/logger": "workspace:*",
     "@typescript/native-preview": "7.0.0-dev.20251223.1",
     "better-auth": "^1.4.10",

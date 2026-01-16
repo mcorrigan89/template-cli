@@ -206,17 +206,47 @@ async function createFromTemplate(
     }
   });
 
-  // Update package.json if it exists
-  const pkgJsonPath = path.join(destDir, 'package.json');
-  if (await fs.pathExists(pkgJsonPath)) {
-    // Read as string and replace all @workspace/ references
-    let pkgJsonContent = await fs.readFile(pkgJsonPath, 'utf-8');
-    pkgJsonContent = pkgJsonContent.replace(/@workspace\//g, `${options.workspacePrefix}/`);
+  // Replace @workspace/ references in all text files
+  await replaceWorkspaceReferences(destDir, options.workspacePrefix);
+}
 
-    // Parse and write back
-    const pkgJson = JSON.parse(pkgJsonContent);
-    await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 2 });
+async function replaceWorkspaceReferences(dir: string, workspacePrefix: string): Promise<void> {
+  const textFileExtensions = ['.json', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.md'];
+
+  async function processDirectory(currentDir: string): Promise<void> {
+    const entries = await fs.readdir(currentDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      const fullPath = path.join(currentDir, entry.name);
+
+      if (entry.isDirectory()) {
+        // Skip node_modules and other unnecessary directories
+        if (entry.name === 'node_modules' || entry.name === '.git') {
+          continue;
+        }
+        await processDirectory(fullPath);
+      } else if (entry.isFile()) {
+        // Check if file has a text extension
+        const ext = path.extname(entry.name);
+        if (textFileExtensions.includes(ext)) {
+          try {
+            let content = await fs.readFile(fullPath, 'utf-8');
+            const updated = content.replace(/@workspace\//g, `${workspacePrefix}/`);
+
+            // Only write if content changed
+            if (updated !== content) {
+              await fs.writeFile(fullPath, updated, 'utf-8');
+            }
+          } catch (error) {
+            // Skip binary files or files that can't be read as text
+            console.log(chalk.yellow(`    Skipping ${entry.name} (not a text file)`));
+          }
+        }
+      }
+    }
   }
+
+  await processDirectory(dir);
 }
 
 async function scaffoldMonorepo(targetDir: string, options: MonorepoOptions): Promise<void> {

@@ -1,5 +1,5 @@
-# Multi-stage build for Node.js application
-FROM node:20-alpine AS base
+# Multi-stage build for TanStack Start web application
+FROM node:22-alpine AS base
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -11,16 +11,18 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 
 # Dependencies stage
 FROM base AS deps
+ENV CI=true
 COPY . .
 RUN pnpm install --frozen-lockfile
 
 # Build stage
 FROM base AS build
 COPY --from=deps /app /app
+WORKDIR /app/apps/web
 RUN pnpm run build
 
 # Production stage
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
@@ -28,15 +30,15 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 appuser
 
-# Copy built application
-COPY --from=build --chown=appuser:nodejs /app/dist ./dist
+# Copy built application (.output directory from TanStack Start)
+COPY --from=build --chown=appuser:nodejs /app/apps/web/.output ./.output
+COPY --from=build --chown=appuser:nodejs /app/apps/web/package.json ./package.json
 COPY --from=build --chown=appuser:nodejs /app/node_modules ./node_modules
-COPY --from=build --chown=appuser:nodejs /app/package.json ./package.json
 
 USER appuser
 
-# Expose port (customize as needed)
+# Expose port
 EXPOSE 3000
 
-# Start the application (customize as needed)
-CMD ["node", "dist/index.js"]
+# Start the application (dotenv-cli is already in node_modules)
+CMD ["node_modules/.bin/dotenv", "--", "node", ".output/server/index.mjs"]

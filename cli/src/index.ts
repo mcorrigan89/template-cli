@@ -424,8 +424,8 @@ async function generateDockerCompose(targetDir: string, options: MonorepoOptions
     };
 
     const dependencies = template.name === 'web'
-      ? ['server', ...(hasDatabase ? ['postgres'] : [])]
-      : hasDatabase ? ['postgres'] : [];
+      ? ['server', ...(hasDatabase ? ['migrate'] : [])]
+      : hasDatabase ? ['migrate'] : [];
 
     dockerCompose += `  # ${template.description}\n`;
     dockerCompose += `  ${template.name}:\n`;
@@ -464,9 +464,29 @@ async function generateDockerCompose(targetDir: string, options: MonorepoOptions
     dockerCompose += `      POSTGRES_DB: myapp\n`;
     dockerCompose += `    volumes:\n`;
     dockerCompose += `      - postgres-data:/var/lib/postgresql/data\n`;
+    dockerCompose += `    healthcheck:\n`;
+    dockerCompose += `      test: ['CMD-SHELL', 'pg_isready -U postgres']\n`;
+    dockerCompose += `      interval: 5s\n`;
+    dockerCompose += `      timeout: 5s\n`;
+    dockerCompose += `      retries: 5\n`;
     dockerCompose += `    restart: unless-stopped\n`;
     dockerCompose += `    networks:\n`;
     dockerCompose += `      - app-network\n\n`;
+
+    // Add migration service
+    dockerCompose += `  # Database migrations\n`;
+    dockerCompose += `  migrate:\n`;
+    dockerCompose += `    build:\n`;
+    dockerCompose += `      context: .\n`;
+    dockerCompose += `      dockerfile: packages/database/Dockerfile.migrate\n`;
+    dockerCompose += `    environment:\n`;
+    dockerCompose += `      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/myapp\n`;
+    dockerCompose += `    depends_on:\n`;
+    dockerCompose += `      postgres:\n`;
+    dockerCompose += `        condition: service_healthy\n`;
+    dockerCompose += `    networks:\n`;
+    dockerCompose += `      - app-network\n`;
+    dockerCompose += `    restart: 'no'\n\n`;
   }
 
   dockerCompose += `networks:\n`;

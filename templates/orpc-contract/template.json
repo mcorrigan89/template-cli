@@ -1,5 +1,6 @@
 {
   "name": "orpc-contract",
   "type": "package",
-  "description": "oRPC contract definitions"
+  "description": "oRPC contract definitions",
+  "default": true
 }

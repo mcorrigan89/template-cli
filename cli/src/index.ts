@@ -62,6 +62,7 @@ interface TemplateInfo {
   type: 'app' | 'package';
   description: string;
   path: string;
+  default?: boolean;
 }
 
 interface MonorepoOptions {
@@ -152,7 +153,7 @@ async function create(): Promise<void> {
       title: `${t.name} (${t.type})`,
       description: t.description,
       value: t,
-      selected: false
+      selected: t.default || false
     })),
     min: 0
   });

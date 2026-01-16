@@ -1,5 +1,6 @@
 {
   "name": "web",
   "type": "app",
-  "description": "TanStack Start web application with Vite"
+  "description": "TanStack Start web application with Vite",
+  "default": true
 }

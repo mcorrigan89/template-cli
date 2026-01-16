@@ -1,0 +1,6 @@
+{
+  "name": "database",
+  "type": "package",
+  "description": "Drizzle postgres integration",
+  "default": true
+}

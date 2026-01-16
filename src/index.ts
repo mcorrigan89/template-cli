@@ -209,8 +209,12 @@ async function createFromTemplate(
   // Update package.json if it exists
   const pkgJsonPath = path.join(destDir, 'package.json');
   if (await fs.pathExists(pkgJsonPath)) {
-    const pkgJson = await fs.readJson(pkgJsonPath);
-    pkgJson.name = `${options.workspacePrefix}/${template.name}`;
+    // Read as string and replace all @workspace/ references
+    let pkgJsonContent = await fs.readFile(pkgJsonPath, 'utf-8');
+    pkgJsonContent = pkgJsonContent.replace(/@workspace\//g, `${options.workspacePrefix}/`);
+
+    // Parse and write back
+    const pkgJson = JSON.parse(pkgJsonContent);
     await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 2 });
   }
 }

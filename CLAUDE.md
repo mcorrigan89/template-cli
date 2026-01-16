@@ -56,7 +56,7 @@ The CLI is a single-file interactive prompt-based generator that:
 ### Key Functions
 
 - `discoverTemplates()`: Scans templates directory and reads template.json metadata for each template
-- `createFromTemplate()`: Copies a template to the appropriate directory (apps/ or packages/) and updates package.json name
+- `createFromTemplate()`: Copies a template to the appropriate directory (apps/ or packages/) and replaces all `@workspace/` references in package.json with the actual workspace prefix
 - `createRootStructure()`: Sets up root package.json with pnpm scripts, pnpm-workspace.yaml, .gitignore, and README
 - `scaffoldMonorepo()`: Orchestrates the monorepo creation by calling the above functions
 - `addFeatures()`: Adds optional root-level tooling:
@@ -83,11 +83,26 @@ Each template in `templates/` should have:
    - `description`: Shown in selection prompt
 
 2. **Template contents**: Complete, ready-to-use project structure
-   - Should include `package.json` (name will be updated with workspace prefix)
+   - Should include `package.json` with `@workspace/` placeholder for workspace references
    - Should include `.eslintrc.json` and `.prettierrc` configs
    - Can include `Dockerfile`, `.dockerignore`, `docker-compose.yml` for apps
    - Can include any other files/folders needed for the project
    - `template.json` itself is not copied to the output
+
+### Workspace Placeholder Pattern
+
+Use `@workspace/` as a placeholder in template `package.json` files:
+
+```json
+{
+  "name": "@workspace/my-package",
+  "dependencies": {
+    "@workspace/other-package": "workspace:*"
+  }
+}
+```
+
+The CLI will replace all `@workspace/` references with the actual workspace prefix (e.g., `@my-org/`).
 
 ### Templates Directory
 
@@ -139,9 +154,10 @@ const templatesDir = path.join(__dirname, '..', 'templates');
 
 ### Package.json Updates
 When copying templates:
-- The CLI reads the template's `package.json`
-- Updates the `name` field to `${workspacePrefix}/${templateName}`
-- Preserves all other fields from the template
+- The CLI reads the template's `package.json` as a string
+- Replaces all `@workspace/` references with the actual workspace prefix (e.g., `@my-org/`)
+- This updates the `name` field and any workspace dependencies
+- Preserves all other fields and formatting from the template
 
 ## Distribution
 

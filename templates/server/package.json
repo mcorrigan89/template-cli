@@ -1,5 +1,5 @@
 {
-  "name": "@template/server",
+  "name": "@workspace/server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -17,8 +17,7 @@
     "@orpc/openapi": "^1.13.2",
     "@orpc/server": "^1.13.2",
     "@orpc/zod": "^1.13.2",
-    "@taxapp/contract": "workspace:^1.0.0",
-    "@taxapp/lookup": "workspace:^1.0.0",
+    "@workspace/orpc-contract": "workspace:*",
     "@typescript/native-preview": "7.0.0-dev.20251223.1",
     "dotenv": "^17.2.3",
     "dotenv-cli": "^11.0.0",

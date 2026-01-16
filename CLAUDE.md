@@ -111,7 +111,7 @@ The `templates/` directory is copied alongside the built CLI during distribution
 - `templates/{name}/`: Individual templates with complete configurations
   - `templates/web/`: App template with ESLint, Prettier, Docker configs
   - `templates/server/`: App template with ESLint, Prettier, Docker configs
-  - `templates/orpc-contract/`: Package template with ESLint, Prettier configs
+  - `templates/contract/`: Package template with ESLint, Prettier configs
 - `templates/features/`: Root-level feature configurations only
   - `husky/`: Git hooks (.husky/pre-commit, .husky/commit-msg)
   - `github-actions/`: CI workflow (.github/workflows/ci.yml)
@@ -210,7 +210,7 @@ The CLI includes optional features that add tooling and configuration:
 
 Docker configurations are included directly in templates (not a feature):
 - Web and Server templates include: `Dockerfile`, `.dockerignore`, `docker-compose.yml`
-- Package templates (like orpc-contract) don't include Docker files
+- Package templates (like contract) don't include Docker files
 - Multi-stage production builds with pnpm
 - Security best practices (non-root user, minimal Alpine images)
 - Each template can customize its Docker configuration independently

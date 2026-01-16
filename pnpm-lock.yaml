@@ -37,6 +37,25 @@ importers:
         specifier: ^5.3.0
         version: 5.9.3
 
+  templates/contract:
+    dependencies:
+      '@orpc/contract':
+        specifier: ^1.13.2
+        version: 1.13.4
+      '@orpc/server':
+        specifier: ^1.13.2
+        version: 1.13.4(crossws@0.4.1(srvx@0.10.0))(ws@8.19.0)
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
+    devDependencies:
+      '@types/node':
+        specifier: ^22.19.3
+        version: 22.19.7
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   templates/database:
     dependencies:
       drizzle-orm:
@@ -62,25 +81,6 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  templates/orpc-contract:
-    dependencies:
-      '@orpc/contract':
-        specifier: ^1.13.2
-        version: 1.13.4
-      '@orpc/server':
-        specifier: ^1.13.2
-        version: 1.13.4(crossws@0.4.1(srvx@0.10.0))(ws@8.19.0)
-      zod:
-        specifier: ^4.3.5
-        version: 4.3.5
-    devDependencies:
-      '@types/node':
-        specifier: ^22.19.3
-        version: 22.19.7
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
   templates/server:
     dependencies:
       '@hono/node-server':
@@ -98,9 +98,9 @@ importers:
       '@orpc/zod':
         specifier: ^1.13.2
         version: 1.13.4(@orpc/contract@1.13.4)(@orpc/server@1.13.4(crossws@0.4.1(srvx@0.10.0))(ws@8.19.0))(crossws@0.4.1(srvx@0.10.0))(ws@8.19.0)(zod@4.3.5)
-      '@template/orpc-contract':
+      '@template/contract':
         specifier: workspace:*
-        version: link:../orpc-contract
+        version: link:../contract
       '@typescript/native-preview':
         specifier: 7.0.0-dev.20251223.1
         version: 7.0.0-dev.20251223.1
@@ -222,9 +222,9 @@ importers:
       '@tanstack/router-plugin':
         specifier: ^1.145.7
         version: 1.150.0(@tanstack/react-router@1.150.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(vite@7.3.1(@types/node@22.19.7)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0))
-      '@template/orpc-contract':
+      '@template/contract':
         specifier: workspace:*
-        version: link:../orpc-contract
+        version: link:../contract
       '@template/server':
         specifier: workspace:*
         version: link:../server

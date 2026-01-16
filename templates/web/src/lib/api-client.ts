@@ -4,7 +4,7 @@ import { getRequestHeaders } from '@tanstack/react-start/server'
 import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import { createORPCClient } from '@orpc/client'
 import { ContractRouterClient } from '@orpc/contract'
-import { contract } from '@template/orpc-contract'
+import { contract } from '@template/contract'
 
 const getClientLink = createIsomorphicFn()
   .client(

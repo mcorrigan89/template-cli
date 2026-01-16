@@ -17,7 +17,7 @@
     "@orpc/openapi": "^1.13.2",
     "@orpc/server": "^1.13.2",
     "@orpc/zod": "^1.13.2",
-    "@template/orpc-contract": "workspace:*",
+    "@template/contract": "workspace:*",
     "@typescript/native-preview": "7.0.0-dev.20251223.1",
     "dotenv": "^17.2.3",
     "dotenv-cli": "^11.0.0",

@@ -324,13 +324,9 @@ async function createRootStructure(targetDir: string, options: MonorepoOptions, 
 
   await fs.writeJson(path.join(targetDir, 'package.json'), rootPackageJson, { spaces: 2 });
 
-  // Copy root-level docker-compose.yml if any app templates are selected
+  // Generate root-level docker-compose.yml if any app templates are selected
   if (hasAppTemplates) {
-    const dockerComposeSource = path.join(templatesDir, 'base', 'docker-compose.yml');
-    if (await fs.pathExists(dockerComposeSource)) {
-      console.log(chalk.gray('  Adding root docker-compose.yml...'));
-      await fs.copy(dockerComposeSource, path.join(targetDir, 'docker-compose.yml'));
-    }
+    await generateDockerCompose(targetDir, options);
   }
 
   // .gitignore
@@ -397,6 +393,92 @@ ${dockerSection}
 ${templatesSection}
   `.trim();
   await fs.writeFile(path.join(targetDir, 'README.md'), readme);
+}
+
+async function generateDockerCompose(targetDir: string, options: MonorepoOptions): Promise<void> {
+  console.log(chalk.gray('  Adding root docker-compose.yml...'));
+
+  const appTemplates = options.selectedTemplates.filter(t => t.type === 'app');
+  const hasDatabase = options.selectedTemplates.some(t => t.name === 'database');
+
+  let dockerCompose = `version: '3.8'\n\nservices:\n`;
+
+  // Add app services
+  for (const template of appTemplates) {
+    const portMap: Record<string, string> = {
+      web: '3000:3000',
+      server: '3001:3001'
+    };
+
+    const envVars: Record<string, string[]> = {
+      web: [
+        'NODE_ENV: production',
+        'API_URL: http://server:3001',
+        ...(hasDatabase ? ['DATABASE_URL: postgresql://postgres:postgres@postgres:5432/myapp'] : [])
+      ],
+      server: [
+        'NODE_ENV: production',
+        'PORT: 3001',
+        ...(hasDatabase ? ['DATABASE_URL: postgresql://postgres:postgres@postgres:5432/myapp'] : [])
+      ]
+    };
+
+    const dependencies = template.name === 'web'
+      ? ['server', ...(hasDatabase ? ['postgres'] : [])]
+      : hasDatabase ? ['postgres'] : [];
+
+    dockerCompose += `  # ${template.description}\n`;
+    dockerCompose += `  ${template.name}:\n`;
+    dockerCompose += `    build:\n`;
+    dockerCompose += `      context: .\n`;
+    dockerCompose += `      dockerfile: apps/${template.name}/Dockerfile\n`;
+    dockerCompose += `    ports:\n`;
+    dockerCompose += `      - '${portMap[template.name] || '3000:3000'}'\n`;
+    dockerCompose += `    environment:\n`;
+    (envVars[template.name] || ['NODE_ENV: production']).forEach(env => {
+      dockerCompose += `      ${env}\n`;
+    });
+
+    if (dependencies.length > 0) {
+      dockerCompose += `    depends_on:\n`;
+      dependencies.forEach(dep => {
+        dockerCompose += `      - ${dep}\n`;
+      });
+    }
+
+    dockerCompose += `    restart: unless-stopped\n`;
+    dockerCompose += `    networks:\n`;
+    dockerCompose += `      - app-network\n\n`;
+  }
+
+  // Add PostgreSQL if database package is selected
+  if (hasDatabase) {
+    dockerCompose += `  # PostgreSQL database\n`;
+    dockerCompose += `  postgres:\n`;
+    dockerCompose += `    image: postgres:16-alpine\n`;
+    dockerCompose += `    ports:\n`;
+    dockerCompose += `      - '5432:5432'\n`;
+    dockerCompose += `    environment:\n`;
+    dockerCompose += `      POSTGRES_USER: postgres\n`;
+    dockerCompose += `      POSTGRES_PASSWORD: postgres\n`;
+    dockerCompose += `      POSTGRES_DB: myapp\n`;
+    dockerCompose += `    volumes:\n`;
+    dockerCompose += `      - postgres-data:/var/lib/postgresql/data\n`;
+    dockerCompose += `    restart: unless-stopped\n`;
+    dockerCompose += `    networks:\n`;
+    dockerCompose += `      - app-network\n\n`;
+  }
+
+  dockerCompose += `networks:\n`;
+  dockerCompose += `  app-network:\n`;
+  dockerCompose += `    driver: bridge\n`;
+
+  if (hasDatabase) {
+    dockerCompose += `\nvolumes:\n`;
+    dockerCompose += `  postgres-data:\n`;
+  }
+
+  await fs.writeFile(path.join(targetDir, 'docker-compose.yml'), dockerCompose);
 }
 
 async function addFeatures(targetDir: string, options: MonorepoOptions, templatesDir: string): Promise<void> {

@@ -1,0 +1,26 @@
+{
+  "name": "create-my-template",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "create-my-template": "./dist/index.js"
+  },
+  "files": ["dist", "templates"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepare-templates": "node scripts/prepare-templates.js",
+    "prepublishOnly": "npm run prepare-templates && npm run build"
+  },
+  "dependencies": {
+    "prompts": "^2.4.2",
+    "fs-extra": "^11.1.1",
+    "chalk": "^4.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/prompts": "^2.4.9",
+    "@types/fs-extra": "^11.0.4",
+    "typescript": "^5.3.0"
+  }
+}

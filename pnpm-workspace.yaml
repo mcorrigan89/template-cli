@@ -1,0 +1,5 @@
+packages:
+  - 'cli'
+  - 'templates/*'
+  - '!templates/base'
+  - '!templates/features'

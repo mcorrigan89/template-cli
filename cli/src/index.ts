@@ -127,8 +127,14 @@ async function create(): Promise<void> {
   }
 
   // Discover and select templates
+  // In dev (monorepo): read from ../../templates (root level)
+  // In dist (published): read from ../templates (cli/templates)
   const templatesDir = path.join(__dirname, '..', 'templates');
-  const availableTemplates = await discoverTemplates(templatesDir);
+  const devTemplatesDir = path.join(__dirname, '..', '..', 'templates');
+
+  // Use dev templates if they exist (monorepo mode), otherwise use dist templates
+  const finalTemplatesDir = await fs.pathExists(devTemplatesDir) ? devTemplatesDir : templatesDir;
+  const availableTemplates = await discoverTemplates(finalTemplatesDir);
 
   if (availableTemplates.length === 0) {
     console.log(chalk.yellow('\n⚠️  No templates found in templates/ directory'));
@@ -231,7 +237,10 @@ async function replaceWorkspaceReferences(dir: string, workspacePrefix: string):
         if (textFileExtensions.includes(ext)) {
           try {
             let content = await fs.readFile(fullPath, 'utf-8');
-            const updated = content.replace(/@workspace\//g, `${workspacePrefix}/`);
+            // Replace both @workspace/ (dist mode) and @template/ (dev mode)
+            const updated = content
+              .replace(/@workspace\//g, `${workspacePrefix}/`)
+              .replace(/@template\//g, `${workspacePrefix}/`);
 
             // Only write if content changed
             if (updated !== content) {
@@ -252,7 +261,11 @@ async function replaceWorkspaceReferences(dir: string, workspacePrefix: string):
 async function scaffoldMonorepo(targetDir: string, options: MonorepoOptions): Promise<void> {
   await fs.ensureDir(targetDir);
 
+  // In dev (monorepo): read from ../../templates (root level)
+  // In dist (published): read from ../templates (cli/templates)
   const templatesDir = path.join(__dirname, '..', 'templates');
+  const devTemplatesDir = path.join(__dirname, '..', '..', 'templates');
+  const finalTemplatesDir = await fs.pathExists(devTemplatesDir) ? devTemplatesDir : templatesDir;
 
   // Create root structure
   await createRootStructure(targetDir, options);
@@ -268,7 +281,7 @@ async function scaffoldMonorepo(targetDir: string, options: MonorepoOptions): Pr
   }
 
   // Add feature configurations
-  await addFeatures(targetDir, options, templatesDir);
+  await addFeatures(targetDir, options, finalTemplatesDir);
 }
 
 async function createRootStructure(targetDir: string, options: MonorepoOptions): Promise<void> {

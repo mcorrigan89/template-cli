@@ -1,5 +1,6 @@
 {
   "name": "server",
   "type": "app",
-  "description": "Express API server"
+  "description": "Express API server",
+  "docker": true
 }

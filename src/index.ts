@@ -28,7 +28,8 @@ async function discoverTemplates(templatesDir: string): Promise<TemplateInfo[]> 
       let metadata = {
         name: entry.name,
         type: 'package' as const,
-        description: entry.name
+        description: entry.name,
+        docker: true
       };
 
       // Read template.json if it exists
@@ -38,7 +39,8 @@ async function discoverTemplates(templatesDir: string): Promise<TemplateInfo[]> 
           metadata = {
             name: fileContent.name || entry.name,
             type: fileContent.type || 'package',
-            description: fileContent.description || entry.name
+            description: fileContent.description || entry.name,
+            docker: fileContent.docker !== undefined ? fileContent.docker : true
           };
         } catch (error) {
           console.log(chalk.yellow(`⚠️  Warning: Invalid template.json in ${entry.name}, using defaults`));
@@ -62,6 +64,7 @@ interface TemplateInfo {
   type: 'app' | 'package';
   description: string;
   path: string;
+  docker?: boolean;
 }
 
 interface MonorepoOptions {
@@ -312,14 +315,89 @@ ${templatesSection}
 }
 
 async function addFeatures(targetDir: string, options: MonorepoOptions, templatesDir: string): Promise<void> {
+  if (options.features.length === 0) {
+    return;
+  }
+
   console.log(chalk.blue('\n🔧 Adding features...'));
+
+  // Read the root package.json to add dependencies
+  const pkgJsonPath = path.join(targetDir, 'package.json');
+  const rootPackageJson = await fs.readJson(pkgJsonPath);
+
+  // Feature dependencies map (for root devDependencies)
+  const featureDeps: Record<string, Record<string, string>> = {
+    eslint: {
+      eslint: '^8.57.0',
+      '@typescript-eslint/parser': '^6.21.0',
+      '@typescript-eslint/eslint-plugin': '^6.21.0'
+    },
+    prettier: {
+      prettier: '^3.2.0'
+    },
+    changesets: {
+      '@changesets/cli': '^2.27.0'
+    },
+    husky: {
+      husky: '^9.0.0'
+    }
+  };
+
+  // Feature scripts map
+  const featureScripts: Record<string, Record<string, string>> = {
+    eslint: {
+      lint: 'pnpm run -r lint',
+      'lint:fix': 'pnpm run -r lint:fix'
+    },
+    prettier: {
+      format: 'pnpm run -r format',
+      'format:check': 'pnpm run -r format:check'
+    },
+    husky: {
+      prepare: 'husky install'
+    }
+  };
 
   for (const feature of options.features) {
     console.log(chalk.gray(`  Adding ${feature}...`));
     const featurePath = path.join(templatesDir, 'features', feature);
-    
-    if (await fs.pathExists(featurePath)) {
-      await fs.copy(featurePath, targetDir, { overwrite: true });
+
+    // Handle Docker feature per-template
+    if (feature === 'docker') {
+      for (const template of options.selectedTemplates) {
+        // Only add Docker to templates that have docker: true
+        if (template.docker === false) {
+          continue;
+        }
+
+        const dockerSourcePath = path.join(featurePath, template.type);
+        if (await fs.pathExists(dockerSourcePath)) {
+          const templateDestDir = path.join(targetDir, template.type === 'app' ? 'apps' : 'packages', template.name);
+          await fs.copy(dockerSourcePath, templateDestDir, { overwrite: true });
+          console.log(chalk.gray(`    Added Docker to ${template.name}`));
+        }
+      }
+    } else {
+      // Copy other feature files to root (husky, github-actions, etc.)
+      if (await fs.pathExists(featurePath)) {
+        await fs.copy(featurePath, targetDir, { overwrite: true });
+      }
+    }
+
+    // Add dependencies for this feature
+    if (featureDeps[feature]) {
+      rootPackageJson.devDependencies = {
+        ...rootPackageJson.devDependencies,
+        ...featureDeps[feature]
+      };
+    }
+
+    // Add scripts for this feature
+    if (featureScripts[feature]) {
+      rootPackageJson.scripts = {
+        ...rootPackageJson.scripts,
+        ...featureScripts[feature]
+      };
     }
   }
 
@@ -339,6 +417,9 @@ async function addFeatures(targetDir: string, options: MonorepoOptions, template
     };
     await fs.writeJson(path.join(targetDir, '.changeset', 'config.json'), changesetConfig, { spaces: 2 });
   }
+
+  // Update root package.json with new dependencies and scripts
+  await fs.writeJson(pkgJsonPath, rootPackageJson, { spaces: 2 });
 }
 
 function printNextSteps(options: MonorepoOptions): void {

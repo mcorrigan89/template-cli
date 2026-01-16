@@ -1,5 +1,6 @@
 {
   "name": "web",
   "type": "app",
-  "description": "Next.js web application"
+  "description": "Next.js web application",
+  "docker": true
 }

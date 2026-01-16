@@ -82,6 +82,8 @@ out
 .nuxt
 dist
 .output
+# Note: We keep bin/ at root for the CLI distribution
+templates/*/dist
 
 # Gatsby files
 .cache/
@@ -140,5 +142,6 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
-# CLI generated templates (for distribution)
-cli/templates/
+# Old CLI directory (monorepo structure)
+cli/node_modules
+cli/src

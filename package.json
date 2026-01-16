@@ -1,17 +1,44 @@
 {
-  "name": "template-cli-monorepo",
-  "private": true,
+  "name": "create-my-template",
   "version": "1.0.0",
+  "description": "CLI tool to scaffold TypeScript monorepos with pnpm workspaces, including web (TanStack Start), server (Hono), and database (Drizzle) templates",
+  "keywords": [
+    "cli",
+    "template",
+    "monorepo",
+    "pnpm",
+    "typescript",
+    "tanstack",
+    "hono",
+    "drizzle"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/template-cli"
+  },
+  "type": "module",
+  "bin": {
+    "create-my-template": "./bin/index.js"
+  },
+  "files": ["bin", "templates"],
   "scripts": {
-    "build": "pnpm --filter create-my-template build",
-    "dev": "pnpm --parallel --filter @template/server --filter @template/web run dev",
-    "dev:server": "pnpm --filter @template/server dev",
-    "dev:web": "pnpm --filter @template/web dev",
-    "test:templates": "pnpm -r --filter './templates/*' run dev",
-    "cli": "node cli/dist/index.js"
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepare": "tsc",
+    "prepare-templates": "node scripts/prepare-templates.js",
+    "prepublishOnly": "npm run prepare-templates && npm run build"
+  },
+  "dependencies": {
+    "prompts": "^2.4.2",
+    "fs-extra": "^11.1.1",
+    "chalk": "^4.1.2"
   },
   "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/prompts": "^2.4.9",
+    "@types/fs-extra": "^11.0.4",
     "typescript": "^5.3.0"
-  },
-  "packageManager": "pnpm@10.25.0"
+  }
 }

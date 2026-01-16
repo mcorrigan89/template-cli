@@ -7,7 +7,26 @@ settings:
 importers:
 
   .:
+    dependencies:
+      chalk:
+        specifier: ^4.1.2
+        version: 4.1.2
+      fs-extra:
+        specifier: ^11.1.1
+        version: 11.3.3
+      prompts:
+        specifier: ^2.4.2
+        version: 2.4.2
     devDependencies:
+      '@types/fs-extra':
+        specifier: ^11.0.4
+        version: 11.0.4
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.30
+      '@types/prompts':
+        specifier: ^2.4.9
+        version: 2.4.9
       typescript:
         specifier: ^5.3.0
         version: 5.9.3
@@ -8493,7 +8512,7 @@ snapshots:
   '@types/fs-extra@11.0.4':
     dependencies:
       '@types/jsonfile': 6.1.4
-      '@types/node': 20.19.30
+      '@types/node': 22.19.7
 
   '@types/json-schema@7.0.15': {}
 
@@ -8517,7 +8536,7 @@ snapshots:
 
   '@types/prompts@2.4.9':
     dependencies:
-      '@types/node': 20.19.30
+      '@types/node': 22.19.7
       kleur: 3.0.3
 
   '@types/react-dom@19.2.3(@types/react@19.2.8)':

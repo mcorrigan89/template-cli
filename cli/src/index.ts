@@ -271,7 +271,7 @@ async function scaffoldMonorepo(targetDir: string, options: MonorepoOptions): Pr
   const finalTemplatesDir = await fs.pathExists(devTemplatesDir) ? devTemplatesDir : templatesDir;
 
   // Create root structure
-  await createRootStructure(targetDir, options);
+  await createRootStructure(targetDir, options, finalTemplatesDir);
 
   // Create from templates
   if (options.selectedTemplates.length > 0) {
@@ -287,12 +287,13 @@ async function scaffoldMonorepo(targetDir: string, options: MonorepoOptions): Pr
   await addFeatures(targetDir, options, finalTemplatesDir);
 }
 
-async function createRootStructure(targetDir: string, options: MonorepoOptions): Promise<void> {
+async function createRootStructure(targetDir: string, options: MonorepoOptions, templatesDir: string): Promise<void> {
   // Create directories
   await fs.ensureDir(path.join(targetDir, 'apps'));
   await fs.ensureDir(path.join(targetDir, 'packages'));
 
   // Root package.json
+  const hasAppTemplates = options.selectedTemplates.some(t => t.type === 'app');
   const rootPackageJson: PackageJson = {
     name: options.monorepoName,
     version: '1.0.0',
@@ -302,7 +303,13 @@ async function createRootStructure(targetDir: string, options: MonorepoOptions):
       build: 'pnpm run -r build',
       lint: 'pnpm run -r lint',
       test: 'pnpm run -r test',
-      clean: 'pnpm run -r clean'
+      clean: 'pnpm run -r clean',
+      ...(hasAppTemplates && {
+        'docker:up': 'docker-compose up',
+        'docker:up:build': 'docker-compose up --build',
+        'docker:down': 'docker-compose down',
+        'docker:logs': 'docker-compose logs -f'
+      })
     },
     devDependencies: {
       typescript: '^5.3.0'
@@ -316,6 +323,15 @@ async function createRootStructure(targetDir: string, options: MonorepoOptions):
   );
 
   await fs.writeJson(path.join(targetDir, 'package.json'), rootPackageJson, { spaces: 2 });
+
+  // Copy root-level docker-compose.yml if any app templates are selected
+  if (hasAppTemplates) {
+    const dockerComposeSource = path.join(templatesDir, 'base', 'docker-compose.yml');
+    if (await fs.pathExists(dockerComposeSource)) {
+      console.log(chalk.gray('  Adding root docker-compose.yml...'));
+      await fs.copy(dockerComposeSource, path.join(targetDir, 'docker-compose.yml'));
+    }
+  }
 
   // .gitignore
   const gitignore = `
@@ -335,6 +351,28 @@ coverage
     ? `\n## Selected Templates\n\n${options.selectedTemplates.map(t => `- **${t.name}** (${t.type}): ${t.description}`).join('\n')}`
     : '';
 
+  const dockerSection = hasAppTemplates
+    ? `
+
+## Docker
+
+Run all apps with Docker Compose:
+
+\`\`\`bash
+# Start all services
+${options.packageManager} run docker:up
+
+# Start with rebuild
+${options.packageManager} run docker:up:build
+
+# Stop all services
+${options.packageManager} run docker:down
+
+# View logs
+${options.packageManager} run docker:logs
+\`\`\``
+    : '';
+
   const readme = `
 # ${options.monorepoName}
 
@@ -350,6 +388,7 @@ ${options.packageManager} run dev
 # Build all
 ${options.packageManager} run build
 \`\`\`
+${dockerSection}
 
 ## Structure
 

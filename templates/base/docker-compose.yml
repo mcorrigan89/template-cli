@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Web application (frontend)
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      API_URL: http://server:3001
+    depends_on:
+      - server
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # API server (backend)
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    ports:
+      - '3001:3001'
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

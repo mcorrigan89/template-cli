@@ -25,10 +25,17 @@
   "files": ["bin", "templates"],
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch",
+    "dev": "pnpm --parallel --filter './templates/*' dev",
+    "start": "node bin/index.js",
     "prepare": "tsc",
     "prepare-templates": "node scripts/prepare-templates.js",
-    "prepublishOnly": "npm run prepare-templates && npm run build"
+    "prepublishOnly": "npm run prepare-templates && npm run build",
+    "dev:server": "pnpm --filter=server dev",
+    "dev:web": "pnpm --filter=web dev",
+    "dev:db": "pnpm --filter=database dev",
+    "build:server": "pnpm --filter=server build",
+    "build:web": "pnpm --filter=web build",
+    "build:db": "pnpm --filter=database build"
   },
   "dependencies": {
     "prompts": "^2.4.2",

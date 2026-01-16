@@ -1,1 +1,1 @@
-export { db, Database } from './db.ts';
+export { db, type Database } from './db.ts';

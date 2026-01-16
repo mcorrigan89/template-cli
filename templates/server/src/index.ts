@@ -10,6 +10,8 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { routerImplementation } from './routes/index.ts';
 import { logger } from '@template/logger';
+import { diContainer } from './lib/di.ts';
+import { AuthService, authSybmol } from './lib/auth.ts';
 
 const handler = new RPCHandler(routerImplementation, {
   plugins: [
@@ -67,6 +69,22 @@ app.use(
 );
 
 app.get('/', (c) => c.text('API!'));
+
+const auth = diContainer.get<AuthService>(authSybmol)
+
+app.on(['POST', 'GET'], '/api/auth/*', (c) => {
+  const expoOrigin = c.req.header('expo-origin')
+  if (expoOrigin) {
+    c.req.raw.headers.set('Origin', expoOrigin)
+  }
+  try {
+    return auth.handler(c.req.raw)
+  } catch (error) {
+    logger.error(error, 'Auth handler error:')
+    return c.text('Internal Server Error', 500)
+  }
+})
+
 
 app.use('/rpc/*', async (c, next) => {
   const { matched, response } = await handler.handle(c.req.raw, {

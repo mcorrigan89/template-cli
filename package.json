@@ -1,5 +1,5 @@
 {
-  "name": "create-my-template",
+  "name": "template-cli",
   "version": "1.0.0",
   "description": "CLI tool to scaffold TypeScript monorepos with pnpm workspaces, including web (TanStack Start), server (Hono), and database (Drizzle) templates",
   "keywords": [
@@ -12,11 +12,11 @@
     "hono",
     "drizzle"
   ],
-  "author": "Your Name <your.email@example.com>",
+  "author": "Michael Corrigan <mcorrigan89@gmail.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/template-cli"
+    "url": "https://github.com/mcorrigan89/template-cli"
   },
   "type": "module",
   "bin": {

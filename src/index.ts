@@ -28,8 +28,7 @@ async function discoverTemplates(templatesDir: string): Promise<TemplateInfo[]> 
       let metadata = {
         name: entry.name,
         type: 'package' as const,
-        description: entry.name,
-        docker: true
+        description: entry.name
       };
 
       // Read template.json if it exists
@@ -39,8 +38,7 @@ async function discoverTemplates(templatesDir: string): Promise<TemplateInfo[]> 
           metadata = {
             name: fileContent.name || entry.name,
             type: fileContent.type || 'package',
-            description: fileContent.description || entry.name,
-            docker: fileContent.docker !== undefined ? fileContent.docker : true
+            description: fileContent.description || entry.name
           };
         } catch (error) {
           console.log(chalk.yellow(`⚠️  Warning: Invalid template.json in ${entry.name}, using defaults`));
@@ -64,7 +62,6 @@ interface TemplateInfo {
   type: 'app' | 'package';
   description: string;
   path: string;
-  docker?: boolean;
 }
 
 interface MonorepoOptions {
@@ -115,12 +112,11 @@ async function create(): Promise<void> {
       name: 'features',
       message: 'Select monorepo features:',
       choices: [
-        { title: 'ESLint (shared config)', value: 'eslint', selected: true },
-        { title: 'Prettier (shared config)', value: 'prettier', selected: true },
+        { title: 'ESLint', value: 'eslint', selected: true },
+        { title: 'Prettier', value: 'prettier', selected: true },
         { title: 'Changesets (versioning)', value: 'changesets', selected: true },
         { title: 'Husky (git hooks)', value: 'husky' },
-        { title: 'GitHub Actions', value: 'github-actions', selected: true },
-        { title: 'Docker', value: 'docker' }
+        { title: 'GitHub Actions', value: 'github-actions', selected: true }
       ]
     }
   ]);
@@ -362,26 +358,9 @@ async function addFeatures(targetDir: string, options: MonorepoOptions, template
     console.log(chalk.gray(`  Adding ${feature}...`));
     const featurePath = path.join(templatesDir, 'features', feature);
 
-    // Handle Docker feature per-template
-    if (feature === 'docker') {
-      for (const template of options.selectedTemplates) {
-        // Only add Docker to templates that have docker: true
-        if (template.docker === false) {
-          continue;
-        }
-
-        const dockerSourcePath = path.join(featurePath, template.type);
-        if (await fs.pathExists(dockerSourcePath)) {
-          const templateDestDir = path.join(targetDir, template.type === 'app' ? 'apps' : 'packages', template.name);
-          await fs.copy(dockerSourcePath, templateDestDir, { overwrite: true });
-          console.log(chalk.gray(`    Added Docker to ${template.name}`));
-        }
-      }
-    } else {
-      // Copy other feature files to root (husky, github-actions, etc.)
-      if (await fs.pathExists(featurePath)) {
-        await fs.copy(featurePath, targetDir, { overwrite: true });
-      }
+    // Copy feature files to root (husky, github-actions, etc.)
+    if (await fs.pathExists(featurePath)) {
+      await fs.copy(featurePath, targetDir, { overwrite: true });
     }
 
     // Add dependencies for this feature

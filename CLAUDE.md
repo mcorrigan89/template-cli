@@ -35,7 +35,7 @@ The CLI is a single-file interactive prompt-based generator that:
 
 1. **Collects configuration** via `prompts`:
    - Monorepo name and workspace prefix (e.g., `@my-org`)
-   - Features (ESLint, Prettier, Changesets, Husky, GitHub Actions, Docker)
+   - Features (ESLint, Prettier, Changesets, Husky, GitHub Actions)
    - Note: TypeScript is always enabled, pnpm scripts are always used (no Turborepo/Nx)
 
 2. **Discovers available templates**:
@@ -59,13 +59,12 @@ The CLI is a single-file interactive prompt-based generator that:
 - `createFromTemplate()`: Copies a template to the appropriate directory (apps/ or packages/) and updates package.json name
 - `createRootStructure()`: Sets up root package.json with pnpm scripts, pnpm-workspace.yaml, .gitignore, and README
 - `scaffoldMonorepo()`: Orchestrates the monorepo creation by calling the above functions
-- `addFeatures()`: Adds optional tooling features:
-  - Installs dependencies for selected features (eslint, prettier, husky, changesets)
-  - Adds root-level scripts (lint, format, prepare)
+- `addFeatures()`: Adds optional root-level tooling:
+  - Installs dependencies for selected features (eslint, prettier, husky, changesets) to root
+  - Adds root-level scripts (lint, format, prepare) that run across all workspaces
   - Copies root-level feature files (husky hooks, GitHub Actions)
-  - For Docker: Adds Docker files to each template based on template's `docker` property
   - Initializes changesets config if selected
-  - Note: ESLint/Prettier configs are already in templates, not added by features
+  - Note: Template configs (ESLint, Prettier, Docker) are already in templates
 
 ### Template Structure
 
@@ -76,38 +75,34 @@ Each template in `templates/` should have:
    {
      "name": "template-name",
      "type": "app" | "package",
-     "description": "Human-readable description",
-     "docker": true
+     "description": "Human-readable description"
    }
    ```
    - `name`: Template identifier (usually matches directory name)
    - `type`: Determines if template goes to `apps/` or `packages/`
    - `description`: Shown in selection prompt
-   - `docker`: (optional) Whether to add Docker files when Docker feature is selected (default: true)
 
 2. **Template contents**: Complete, ready-to-use project structure
    - Should include `package.json` (name will be updated with workspace prefix)
-   - Can include any files/folders needed for the project
+   - Should include `.eslintrc.json` and `.prettierrc` configs
+   - Can include `Dockerfile`, `.dockerignore`, `docker-compose.yml` for apps
+   - Can include any other files/folders needed for the project
    - `template.json` itself is not copied to the output
 
 ### Templates Directory
 
 The `templates/` directory is copied alongside the built CLI during distribution:
 - `templates/base/`: Base configuration files (pnpm-workspace.yaml, .prettierignore)
-- `templates/{name}/`: Individual templates with `template.json` metadata
-  - `templates/web/`: Example app template
-  - `templates/server/`: Example app template
-  - `templates/orpc-contract/`: Example package template
-- `templates/features/`: Feature configurations
-  - `changesets/`: Changesets versioning (config generated programmatically)
-  - `husky/`: Git hooks (.husky/pre-commit, .husky/commit-msg) - copied to root
-  - `github-actions/`: CI workflow (.github/workflows/ci.yml) - copied to root
-  - `docker/app/`: Docker configs for app templates (Dockerfile, .dockerignore, docker-compose.yml)
-  - `docker/package/`: Docker configs for package templates (if needed)
+- `templates/{name}/`: Individual templates with complete configurations
+  - `templates/web/`: App template with ESLint, Prettier, Docker configs
+  - `templates/server/`: App template with ESLint, Prettier, Docker configs
+  - `templates/orpc-contract/`: Package template with ESLint, Prettier configs
+- `templates/features/`: Root-level feature configurations only
+  - `husky/`: Git hooks (.husky/pre-commit, .husky/commit-msg)
+  - `github-actions/`: CI workflow (.github/workflows/ci.yml)
+  - `changesets/`: Config generated programmatically
 
-**Note**:
-- ESLint and Prettier configs (`.eslintrc.json`, `.prettierrc`) are included directly in each template directory, not as features.
-- Docker files are added per-template based on the `docker` property in template.json
+**Note**: ESLint, Prettier, and Docker configs are in each template directory, not in features. Each template is self-contained.
 
 ## Important Patterns
 
@@ -169,15 +164,15 @@ The CLI includes optional features that add tooling and configuration:
 
 ### ESLint
 - Installs ESLint and TypeScript plugins to root devDependencies
-- Each template includes its own `.eslintrc.json` with TypeScript support
+- Each template already includes its own `.eslintrc.json` (copied with template)
 - Root scripts: `lint` (runs `pnpm run -r lint`), `lint:fix`
-- Templates can customize their configs independently
+- Each template can have different ESLint rules as needed
 
 ### Prettier
 - Installs Prettier to root devDependencies
-- Each template includes its own `.prettierrc` with opinionated defaults
+- Each template already includes its own `.prettierrc` (copied with template)
 - Root scripts: `format` (runs `pnpm run -r format`), `format:check`
-- Templates can customize their configs independently
+- Each template can have different formatting rules as needed
 
 ### Changesets
 - Adds `.changeset/config.json` for version management
@@ -195,9 +190,11 @@ The CLI includes optional features that add tooling and configuration:
 - Runs: lint, type-check, test, build on push/PR
 - Uses pnpm with caching
 
-### Docker
-- Adds Docker files to each selected template (based on template's `docker` property)
-- Apps get: `Dockerfile`, `.dockerignore`, `docker-compose.yml`
-- Multi-stage production build with pnpm
-- Security best practices (non-root user, minimal image)
-- Templates can opt-out by setting `"docker": false` in template.json
+## Docker
+
+Docker configurations are included directly in templates (not a feature):
+- Web and Server templates include: `Dockerfile`, `.dockerignore`, `docker-compose.yml`
+- Package templates (like orpc-contract) don't include Docker files
+- Multi-stage production builds with pnpm
+- Security best practices (non-root user, minimal Alpine images)
+- Each template can customize its Docker configuration independently

@@ -1,6 +1,5 @@
 {
   "name": "orpc-contract",
   "type": "package",
-  "description": "oRPC contract definitions",
-  "docker": false
+  "description": "oRPC contract definitions"
 }

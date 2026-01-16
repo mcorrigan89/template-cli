@@ -1,0 +1,13 @@
+node_modules
+dist
+build
+.next
+.git
+.gitignore
+*.md
+.env*.local
+coverage
+.turbo
+.nx
+.DS_Store
+*.log

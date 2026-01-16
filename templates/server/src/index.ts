@@ -8,8 +8,8 @@ import { CORSPlugin } from '@orpc/server/plugins';
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { logger } from './lib/logger.ts';
 import { routerImplementation } from './routes/index.ts';
+import { logger } from '@template/logger';
 
 const handler = new RPCHandler(routerImplementation, {
   plugins: [
@@ -63,7 +63,7 @@ app.use(
     exposeHeaders: ['Content-Length'],
     maxAge: 600,
     credentials: true,
-  }),
+  })
 );
 
 app.get('/', (c) => c.text('API!'));
@@ -105,7 +105,7 @@ const server = serve(
   },
   (info) => {
     logger.info(`Server started on http://localhost:${info.port}`);
-  },
+  }
 );
 
 process.on('SIGINT', () => {

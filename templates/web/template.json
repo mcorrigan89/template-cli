@@ -1,5 +1,5 @@
 {
   "name": "web",
   "type": "app",
-  "description": "Next.js web application"
+  "description": "TanStack Start web application with Vite"
 }

@@ -9,8 +9,60 @@ import chalk from 'chalk';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-type Framework = 'react' | 'vue' | 'vanilla' | 'node' | 'next' | 'express';
-// type PackageManager = 'pnpm' | 'npm' | 'yarn';
+async function discoverTemplates(templatesDir: string): Promise<TemplateInfo[]> {
+  const templates: TemplateInfo[] = [];
+  const ignoreDirs = ['base', 'features'];
+
+  try {
+    const entries = await fs.readdir(templatesDir, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (!entry.isDirectory() || ignoreDirs.includes(entry.name)) {
+        continue;
+      }
+
+      const templatePath = path.join(templatesDir, entry.name);
+      const metadataPath = path.join(templatePath, 'template.json');
+
+      // Default metadata if template.json doesn't exist
+      let metadata = {
+        name: entry.name,
+        type: 'package' as const,
+        description: entry.name
+      };
+
+      // Read template.json if it exists
+      if (await fs.pathExists(metadataPath)) {
+        try {
+          const fileContent = await fs.readJson(metadataPath);
+          metadata = {
+            name: fileContent.name || entry.name,
+            type: fileContent.type || 'package',
+            description: fileContent.description || entry.name
+          };
+        } catch (error) {
+          console.log(chalk.yellow(`⚠️  Warning: Invalid template.json in ${entry.name}, using defaults`));
+        }
+      }
+
+      templates.push({
+        ...metadata,
+        path: templatePath
+      });
+    }
+  } catch (error) {
+    console.log(chalk.red('Error discovering templates:'), error);
+  }
+
+  return templates;
+}
+
+interface TemplateInfo {
+  name: string;
+  type: 'app' | 'package';
+  description: string;
+  path: string;
+}
 
 interface MonorepoOptions {
   monorepoName: string;
@@ -18,19 +70,8 @@ interface MonorepoOptions {
   packageManager: 'pnpm';
   buildTool: 'turborepo' | 'nx' | 'none';
   typescript: boolean;
-  apps: AppConfig[];
-  packages: PackageConfig[];
+  selectedTemplates: TemplateInfo[];
   features: string[];
-}
-
-interface AppConfig {
-  name: string;
-  framework: Framework;
-}
-
-interface PackageConfig {
-  name: string;
-  type: 'ui' | 'utils' | 'config' | 'types';
 }
 
 interface PackageJson {
@@ -116,107 +157,40 @@ async function create(): Promise<void> {
     process.exit(0);
   }
 
-  // Ask about apps
-  const apps: AppConfig[] = [];
-  let addMoreApps = true;
-  
-  console.log(chalk.cyan('\n📱 Configure Applications:'));
-  
-  while (addMoreApps) {
-    const appResponse = await prompts([
-      {
-        type: 'text',
-        name: 'name',
-        message: `App name (${apps.length + 1}):`,
-        initial: apps.length === 0 ? 'web' : ''
-      },
-      {
-        type: (prev: string) => prev ? 'select' : null,
-        name: 'framework',
-        message: 'Framework:',
-        choices: [
-          { title: 'Next.js', value: 'next' },
-          { title: 'React (Vite)', value: 'react' },
-          { title: 'Vue (Vite)', value: 'vue' },
-          { title: 'Express API', value: 'express' },
-          { title: 'Vanilla', value: 'vanilla' }
-        ]
-      },
-      {
-        type: (prev: any, values: any) => values.name ? 'confirm' : null,
-        name: 'addMore',
-        message: 'Add another app?',
-        initial: apps.length === 0
-      }
-    ]);
+  // Discover and select templates
+  const templatesDir = path.join(__dirname, '..', 'templates');
+  const availableTemplates = await discoverTemplates(templatesDir);
 
-    if (appResponse.name) {
-      apps.push({ name: appResponse.name, framework: appResponse.framework });
-    }
-    
-    addMoreApps = appResponse.addMore && appResponse.name;
+  if (availableTemplates.length === 0) {
+    console.log(chalk.yellow('\n⚠️  No templates found in templates/ directory'));
+    console.log(chalk.gray('Create template directories in templates/ with template.json files'));
+    process.exit(1);
   }
 
-  // Ask about packages
-  const packages: PackageConfig[] = [];
-  let addMorePackages = true;
-  
-  console.log(chalk.cyan('\n📦 Configure Packages:'));
-  
-  const suggestPackages = await prompts({
-    type: 'confirm',
-    name: 'value',
-    message: 'Add common packages (ui, utils, tsconfig)?',
-    initial: true
+  console.log(chalk.cyan('\n📦 Select Templates:'));
+
+  const templateSelection = await prompts({
+    type: 'multiselect',
+    name: 'selectedTemplates',
+    message: 'Select templates to include:',
+    choices: availableTemplates.map(t => ({
+      title: `${t.name} (${t.type})`,
+      description: t.description,
+      value: t,
+      selected: false
+    })),
+    min: 0
   });
 
-  if (suggestPackages.value) {
-    packages.push(
-      { name: 'ui', type: 'ui' },
-      { name: 'utils', type: 'utils' },
-      { name: 'tsconfig', type: 'config' }
-    );
-  } else {
-    while (addMorePackages) {
-      const pkgResponse = await prompts([
-        {
-          type: 'text',
-          name: 'name',
-          message: `Package name (${packages.length + 1}):`,
-          initial: ''
-        },
-        {
-          type: (prev: string) => prev ? 'select' : null,
-          name: 'type',
-          message: 'Package type:',
-          choices: [
-            { title: 'UI Components', value: 'ui' },
-            { title: 'Utilities', value: 'utils' },
-            { title: 'Config', value: 'config' },
-            { title: 'Types', value: 'types' }
-          ]
-        },
-        {
-          type: (prev: any, values: any) => values.name ? 'confirm' : null,
-          name: 'addMore',
-          message: 'Add another package?',
-          initial: false
-        }
-      ]);
-
-      if (pkgResponse.name) {
-        packages.push({ name: pkgResponse.name, type: pkgResponse.type });
-      }
-      
-      addMorePackages = pkgResponse.addMore && pkgResponse.name;
-    }
+  if (templateSelection.selectedTemplates === undefined) {
+    console.log(chalk.red('\n❌ Operation cancelled'));
+    process.exit(0);
   }
 
   const options: MonorepoOptions = {
     ...response,
     packageManager: 'pnpm',
-    apps,
-    packages
+    selectedTemplates: templateSelection.selectedTemplates || []
   };
 
   const targetDir = path.join(process.cwd(), options.monorepoName);
@@ -243,6 +217,35 @@ async function create(): Promise<void> {
   printNextSteps(options);
 }
 
+async function createFromTemplate(
+  targetDir: string,
+  template: TemplateInfo,
+  options: MonorepoOptions
+): Promise<void> {
+  // Determine destination directory based on template type
+  const destType = template.type === 'app' ? 'apps' : 'packages';
+  const destDir = path.join(targetDir, destType, template.name);
+
+  console.log(chalk.gray(`  Creating ${template.name} (${template.type})...`));
+
+  // Copy template directory to destination
+  await fs.ensureDir(destDir);
+  await fs.copy(template.path, destDir, {
+    filter: (src: string) => {
+      // Don't copy template.json metadata file
+      return !src.endsWith('template.json');
+    }
+  });
+
+  // Update package.json if it exists
+  const pkgJsonPath = path.join(destDir, 'package.json');
+  if (await fs.pathExists(pkgJsonPath)) {
+    const pkgJson = await fs.readJson(pkgJsonPath);
+    pkgJson.name = `${options.workspacePrefix}/${template.name}`;
+    await fs.writeJson(pkgJsonPath, pkgJson, { spaces: 2 });
+  }
+}
+
 async function scaffoldMonorepo(targetDir: string, options: MonorepoOptions): Promise<void> {
   await fs.ensureDir(targetDir);
 
@@ -250,17 +253,15 @@ async function scaffoldMonorepo(targetDir: string, options: MonorepoOptions): Pr
 
   // Create root structure
   await createRootStructure(targetDir, options);
-  
-  // Create apps
-  console.log(chalk.blue('\n📱 Creating applications...'));
-  for (const app of options.apps) {
-    await createApp(targetDir, app, options, templatesDir);
-  }
 
-  // Create packages
-  console.log(chalk.blue('\n📦 Creating packages...'));
-  for (const pkg of options.packages) {
-    await createPackage(targetDir, pkg, options, templatesDir);
+  // Create from templates
+  if (options.selectedTemplates.length > 0) {
+    console.log(chalk.blue('\n📦 Creating from templates...'));
+    for (const template of options.selectedTemplates) {
+      await createFromTemplate(targetDir, template, options);
+    }
+  } else {
+    console.log(chalk.yellow('\n⚠️  No templates selected, creating empty monorepo structure'));
   }
 
   // Add feature configurations
@@ -380,6 +381,10 @@ coverage
   await fs.writeFile(path.join(targetDir, '.gitignore'), gitignore);
 
   // README.md
+  const templatesSection = options.selectedTemplates.length > 0
+    ? `\n## Selected Templates\n\n${options.selectedTemplates.map(t => `- **${t.name}** (${t.type}): ${t.description}`).join('\n')}`
+    : '';
+
   const readme = `
 # ${options.monorepoName}
 
@@ -400,241 +405,9 @@ ${options.packageManager} run build
 
 - \`apps/*\` - Applications
 - \`packages/*\` - Shared packages
-
-## Apps
-
-${options.apps.map(app => `- **${app.name}** (${app.framework})`).join('\n')}
-
-## Packages
-
-${options.packages.map(pkg => `- **${pkg.name}** (${pkg.type})`).join('\n')}
+${templatesSection}
   `.trim();
   await fs.writeFile(path.join(targetDir, 'README.md'), readme);
-}
-
-async function createApp(
-  targetDir: string,
-  app: AppConfig,
-  options: MonorepoOptions,
-  templatesDir: string
-): Promise<void> {
-  const appDir = path.join(targetDir, 'apps', app.name);
-  await fs.ensureDir(appDir);
-
-  console.log(chalk.gray(`  Creating ${app.name} (${app.framework})...`));
-
-  const suffix = options.typescript ? '-ts' : '-js';
-  const templatePath = path.join(templatesDir, 'apps', `${app.framework}${suffix}`);
-
-  if (await fs.pathExists(templatePath)) {
-    await fs.copy(templatePath, appDir);
-  }
-
-  // Generate app package.json
-  const appPackageJson = generateAppPackageJson(app, options);
-  await fs.writeJson(path.join(appDir, 'package.json'), appPackageJson, { spaces: 2 });
-
-  // Add TypeScript config if needed
-  if (options.typescript) {
-    const tsConfig = generateTsConfig('app', app.framework, options);
-    await fs.writeJson(path.join(appDir, 'tsconfig.json'), tsConfig, { spaces: 2 });
-  }
-}
-
-async function createPackage(
-  targetDir: string,
-  pkg: PackageConfig,
-  options: MonorepoOptions,
-  templatesDir: string
-): Promise<void> {
-  const pkgDir = path.join(targetDir, 'packages', pkg.name);
-  await fs.ensureDir(pkgDir);
-
-  console.log(chalk.gray(`  Creating ${pkg.name} (${pkg.type})...`));
-
-  const suffix = options.typescript ? '-ts' : '-js';
-  const templatePath = path.join(templatesDir, 'packages', `${pkg.type}${suffix}`);
-
-  if (await fs.pathExists(templatePath)) {
-    await fs.copy(templatePath, pkgDir);
-  } else {
-    // Create basic structure
-    await fs.ensureDir(path.join(pkgDir, 'src'));
-    const indexContent = options.typescript 
-      ? `export const hello = (): string => 'Hello from ${pkg.name}';\n`
-      : `export const hello = () => 'Hello from ${pkg.name}';\n`;
-    
-    const ext = options.typescript ? 'ts' : 'js';
-    await fs.writeFile(path.join(pkgDir, 'src', `index.${ext}`), indexContent);
-  }
-
-  // Generate package package.json
-  const pkgPackageJson = generatePackagePackageJson(pkg, options);
-  await fs.writeJson(path.join(pkgDir, 'package.json'), pkgPackageJson, { spaces: 2 });
-
-  // Add TypeScript config if needed
-  if (options.typescript) {
-    const tsConfig = generateTsConfig('package', pkg.type, options);
-    await fs.writeJson(path.join(pkgDir, 'tsconfig.json'), tsConfig, { spaces: 2 });
-  }
-
-  // Add README
-  const readme = `# ${options.workspacePrefix}/${pkg.name}\n\n${pkg.type} package\n`;
-  await fs.writeFile(path.join(pkgDir, 'README.md'), readme);
-}
-
-function generateAppPackageJson(app: AppConfig, options: MonorepoOptions): PackageJson {
-  const packageJson: PackageJson = {
-    name: `${options.workspacePrefix}/${app.name}`,
-    version: '0.1.0',
-    private: true,
-    scripts: {},
-    dependencies: {},
-    devDependencies: {}
-  };
-
-  switch (app.framework) {
-    case 'next':
-      packageJson.scripts = {
-        dev: 'next dev',
-        build: 'next build',
-        start: 'next start',
-        lint: 'next lint'
-      };
-      packageJson.dependencies = {
-        next: '^14.0.0',
-        react: '^18.2.0',
-        'react-dom': '^18.2.0'
-      };
-      if (options.typescript) {
-        packageJson.devDependencies = {
-          '@types/node': '^20.10.0',
-          '@types/react': '^18.2.0',
-          '@types/react-dom': '^18.2.0',
-          typescript: '^5.3.0'
-        };
-      }
-      break;
-
-    case 'react':
-    case 'vue':
-    case 'vanilla':
-      packageJson.type = 'module';
-      packageJson.scripts = {
-        dev: 'vite',
-        build: 'vite build',
-        preview: 'vite preview'
-      };
-      packageJson.devDependencies = { vite: '^5.0.0' };
-      
-      if (app.framework === 'react') {
-        packageJson.dependencies = {
-          react: '^18.2.0',
-          'react-dom': '^18.2.0'
-        };
-        packageJson.devDependencies['@vitejs/plugin-react'] = '^4.2.0';
-        if (options.typescript) {
-          packageJson.devDependencies['@types/react'] = '^18.2.0';
-          packageJson.devDependencies['@types/react-dom'] = '^18.2.0';
-        }
-      } else if (app.framework === 'vue') {
-        packageJson.dependencies = { vue: '^3.3.0' };
-        packageJson.devDependencies['@vitejs/plugin-vue'] = '^5.0.0';
-      }
-      break;
-
-    case 'express':
-      packageJson.type = 'module';
-      packageJson.scripts = {
-        dev: 'tsx watch src/index.ts',
-        build: 'tsc',
-        start: 'node dist/index.js'
-      };
-      packageJson.dependencies = { express: '^4.18.0' };
-      packageJson.devDependencies = {
-        tsx: '^4.7.0',
-        '@types/express': '^4.17.0',
-        '@types/node': '^20.10.0'
-      };
-      break;
-  }
-
-  return packageJson;
-}
-
-function generatePackagePackageJson(pkg: PackageConfig, options: MonorepoOptions): PackageJson {
-  const packageJson: PackageJson = {
-    name: `${options.workspacePrefix}/${pkg.name}`,
-    version: '0.1.0',
-    private: false,
-    main: './dist/index.js',
-    types: './dist/index.d.ts',
-    exports: {
-      '.': {
-        import: './dist/index.js',
-        require: './dist/index.cjs',
-        types: './dist/index.d.ts'
-      }
-    },
-    scripts: {
-      build: 'tsup',
-      dev: 'tsup --watch'
-    },
-    devDependencies: {
-      tsup: '^8.0.0'
-    }
-  };
-
-  if (pkg.type === 'ui') {
-    packageJson.peerDependencies = {
-      react: '^18.2.0',
-      'react-dom': '^18.2.0'
-    };
-  }
-
-  return packageJson;
-}
-
-function generateTsConfig(type: 'app' | 'package', framework: string, options: MonorepoOptions): any {
-  const baseConfig = {
-    compilerOptions: {
-      target: 'ES2020',
-      useDefineForClassFields: true,
-      lib: ['ES2020', 'DOM', 'DOM.Iterable'],
-      module: 'ESNext',
-      skipLibCheck: true,
-      moduleResolution: 'bundler',
-      allowImportingTsExtensions: true,
-      resolveJsonModule: true,
-      isolatedModules: true,
-      noEmit: true,
-      jsx: 'react-jsx',
-      strict: true,
-      noUnusedLocals: true,
-      noUnusedParameters: true,
-      noFallthroughCasesInSwitch: true
-    },
-    include: ['src'],
-    exclude: ['node_modules', 'dist']
-  };
-
-  if (type === 'package') {
-    baseConfig.compilerOptions.noEmit = false;
-    // baseConfig.compilerOptions.declaration = true;
-    // baseConfig.compilerOptions.outDir = 'dist';
-  }
-
-  if (framework === 'next') {
-    return {
-      extends: 'next/core-web-vitals',
-      compilerOptions: {
-        ...baseConfig.compilerOptions,
-        noEmit: true
-      }
-    };
-  }
-
-  return baseConfig;
 }
 
 async function addFeatures(targetDir: string, options: MonorepoOptions, templatesDir: string): Promise<void> {

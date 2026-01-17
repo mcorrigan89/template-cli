@@ -16,7 +16,8 @@ export type ClientEnv = z.infer<typeof clientSchema>;
  * Throws an error if validation fails
  */
 export function getClientEnv(): ClientEnv {
-  const parsed = clientSchema.safeParse(import.meta.env);
+  const env = (import.meta as { env?: Record<string, string | undefined> }).env || {};
+  const parsed = clientSchema.safeParse(env);
 
   if (!parsed.success) {
     console.error("❌ Invalid client environment variables:", parsed.error.flatten().fieldErrors);

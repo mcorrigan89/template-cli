@@ -26,7 +26,10 @@ export type SharedEnv = z.infer<typeof sharedSchema>;
  */
 export function getSharedEnv(): SharedEnv {
   // Try process.env first (Node.js), fallback to import.meta.env (browser)
-  const env = typeof process !== 'undefined' ? process.env : import.meta.env;
+  const env =
+    typeof process !== 'undefined'
+      ? process.env
+      : (import.meta as { env?: Record<string, string | undefined> }).env || {};
 
   const parsed = sharedSchema.safeParse(env);
 

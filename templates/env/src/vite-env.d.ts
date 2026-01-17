@@ -6,9 +6,13 @@ interface ImportMetaEnv {
   readonly CLIENT_URL?: string;
   readonly NODE_ENV?: string;
   readonly ENABLE_MAINTENANCE_MODE?: string;
-  // Add other env variables here
+  [key: string]: string | undefined;
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
+declare global {
+  interface ImportMeta {
+    readonly env: ImportMetaEnv;
+  }
 }
+
+export {};

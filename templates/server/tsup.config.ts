@@ -9,6 +9,7 @@ export default defineConfig({
   sourcemap: true,
   splitting: false,
   bundle: true,
+  tsconfig: './tsconfig.json', // Use tsconfig for path resolution
   external: [
     // Mark all node_modules as external (don't bundle them)
     /^[^./]|^\.[^./]|^\.\.[^/]/,

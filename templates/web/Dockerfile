@@ -40,5 +40,5 @@ USER appuser
 # Expose port
 EXPOSE 3000
 
-# Start the application (dotenv-cli is already in node_modules)
-CMD ["node_modules/.bin/dotenv", "--", "node", ".output/server/index.mjs"]
+# Start the application
+CMD ["node", ".output/server/index.mjs"]

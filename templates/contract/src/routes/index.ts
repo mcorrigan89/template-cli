@@ -10,7 +10,6 @@ const helloworld = oc.input(z.object({ name: z.string().optional() })).output(z.
 
 export const contract = {
   helloworld,
-  helloworldAuth: helloworld,
   auth: {
     currentUser,
   },

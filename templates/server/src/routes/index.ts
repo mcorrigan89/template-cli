@@ -36,10 +36,6 @@ const helloworld = publicRoute.helloworld.handler(async ({ input: { name } }) =>
   return name ? `Hello, ${name}!` : 'Hello, World!';
 });
 
-const helloworldAuth = authorizedRoute.helloworld.handler(async ({ input: { name } }) => {
-  return name ? `Hello, ${name}!` : 'Hello, World!';
-});
-
 const currentUser = authorizedRoute.auth.currentUser.handler(async ({ context }) => {
   const userEntity = await context.domain.userService.currentUser(createUserContext(context));
   if (!userEntity) {
@@ -54,7 +50,6 @@ const currentUser = authorizedRoute.auth.currentUser.handler(async ({ context })
 
 export const routerImplementation = base.router({
   helloworld,
-  helloworldAuth,
   auth: {
     currentUser,
   },

@@ -163,7 +163,7 @@ async function createFromTemplate(targetDir, template, options) {
     await replaceWorkspaceReferences(destDir, options.workspacePrefix);
 }
 async function replaceWorkspaceReferences(dir, workspacePrefix) {
-    const textFileExtensions = ['.json', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.md'];
+    const textFileExtensions = ['.json', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.md', '.css', '.scss', '.sass', '.less'];
     async function processDirectory(currentDir) {
         const entries = await fs.readdir(currentDir, { withFileTypes: true });
         for (const entry of entries) {

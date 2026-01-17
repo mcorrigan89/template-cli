@@ -19,7 +19,7 @@ function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       <div>{data}</div>
-      <Button variant={'secondary'} onClick={handleButtonClick}>
+      <Button variant={'destructive'} onClick={handleButtonClick}>
         Button
       </Button>
     </div>

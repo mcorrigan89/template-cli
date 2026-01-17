@@ -229,7 +229,7 @@ async function createFromTemplate(
 }
 
 async function replaceWorkspaceReferences(dir: string, workspacePrefix: string): Promise<void> {
-  const textFileExtensions = ['.json', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.md'];
+  const textFileExtensions = ['.json', '.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.md', '.css', '.scss', '.sass', '.less'];
 
   async function processDirectory(currentDir: string): Promise<void> {
     const entries = await fs.readdir(currentDir, { withFileTypes: true });

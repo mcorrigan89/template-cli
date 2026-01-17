@@ -1,2 +1,4 @@
 @import 'tailwindcss';
 @import "@template/ui/styles.css";
+
+@source "../node_modules/@template/ui/src/components/"

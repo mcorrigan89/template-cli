@@ -5,11 +5,7 @@ import {
 } from '@orpc/contract';
 import { z } from 'zod';
 import { currentUser } from './auth-routes.ts';
-import {
-  counterSubscription,
-  chatSubscription,
-  notificationSubscription,
-} from './subscription-routes.ts';
+import { notificationSubscription } from './subscription-routes.ts';
 
 const helloworld = oc.input(z.object({ name: z.string().optional() })).output(z.string());
 
@@ -19,8 +15,6 @@ export const contract = {
     currentUser,
   },
   subscriptions: {
-    counter: counterSubscription,
-    chat: chatSubscription,
     notifications: notificationSubscription,
   },
 };

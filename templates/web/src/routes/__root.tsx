@@ -1,11 +1,13 @@
+import { TanStackDevtools } from '@tanstack/react-devtools';
+import { FormDevtoolsPanel } from '@tanstack/react-form-devtools';
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
-import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
-import { FormDevtoolsPanel } from '@tanstack/react-form-devtools';
-import { TanStackDevtools } from '@tanstack/react-devtools';
+import { Toaster } from 'sonner';
 
+import { type QueryClient } from '@tanstack/react-query';
 import appCss from '../styles.css?url';
-import type { QueryClient } from '@tanstack/react-query';
+import { NotificationSubscriber } from '@/components/NotificationSubscriber';
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -41,6 +43,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Toaster position="top-right" richColors closeButton />
+        <NotificationSubscriber />
         <TanStackDevtools
           config={{
             position: 'bottom-right',

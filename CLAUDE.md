@@ -449,3 +449,261 @@ const userCount = await db
 - [Drizzle ORM Documentation](https://orm.drizzle.team/)
 - [Drizzle Kit (Migrations)](https://orm.drizzle.team/kit-docs/overview)
 - [PostgreSQL Column Types](https://orm.drizzle.team/docs/column-types/pg)
+
+## ORPC Event Iterators and Real-Time Subscriptions
+
+The templates include support for real-time streaming and subscriptions using ORPC's Event Iterator feature, which enables Server-Sent Events (SSE) for live updates.
+
+### Contract Definition
+
+Event iterators are defined using the `eventIterator()` helper from `@orpc/contract`:
+
+```typescript
+import { oc, eventIterator } from '@orpc/contract';
+import { z } from 'zod';
+
+// Define an event iterator contract
+export const counterSubscription = oc
+  .input(z.object({ interval: z.number().optional().default(1000) }))
+  .output(eventIterator(z.object({ count: z.number(), timestamp: z.string() })));
+```
+
+**Important**: Always wrap the output schema with `eventIterator()` for streaming endpoints. This signals that the endpoint will return a stream of events rather than a single response.
+
+### Server Implementation
+
+Implement event iterators using async generator functions with `.handler()`:
+
+```typescript
+import { publicRoute } from './base.ts';
+
+const counter = publicRoute.subscriptions.counter.handler(async function* ({ input }) {
+  let count = 0;
+  while (true) {
+    yield {
+      count,
+      timestamp: new Date().toISOString(),
+    };
+    count++;
+    await new Promise((resolve) => setTimeout(resolve, input.interval));
+  }
+});
+```
+
+**Key patterns:**
+- Use `async function*` (async generator) for the handler
+- Use `yield` to emit events to the client
+- Use `while (true)` for continuous streams
+- Handle cleanup in `finally` blocks if needed
+- Access `lastEventId` parameter for resume support
+
+### Client Usage
+
+Subscribe to event iterators using ORPC's `experimental_liveOptions` with TanStack Query:
+
+```typescript
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { orpc } from '@/lib/api-client';
+
+function Component() {
+  const [messages, setMessages] = useState([]);
+
+  // Use experimental_liveOptions for event iterators
+  const { data } = useQuery({
+    ...orpc.subscriptions.counter.experimental_liveOptions({
+      input: { interval: 1000 },
+    }),
+    enabled: true, // Control subscription
+    refetchInterval: false,
+  });
+
+  // Accumulate messages as they arrive
+  useEffect(() => {
+    if (data) {
+      setMessages((prev) => [...prev, data]);
+    }
+  }, [data]);
+
+  return (
+    <div>
+      {messages.map((msg, i) => (
+        <div key={i}>Count: {msg.count}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+**Key Points:**
+- Use `experimental_liveOptions()` to wrap event iterators for TanStack Query
+- `data` contains the latest event from the stream
+- Control subscription with the `enabled` flag
+- TanStack Query handles caching, deduplication, and cleanup automatically
+
+### Event Iterator Features
+
+**Resume Support**: Event iterators support automatic resume via `lastEventId`:
+
+```typescript
+const handler = publicRoute.example.handler(async function* ({ input, lastEventId }) {
+  // Resume from last event if reconnecting
+  if (lastEventId) {
+    // Skip to last event and continue
+  }
+
+  while (true) {
+    yield withEventMeta(
+      { message: 'Hello' },
+      { id: 'unique-id', retry: 10000 }
+    );
+  }
+});
+```
+
+**Cleanup**: Use finally blocks for cleanup when streams end:
+
+```typescript
+const handler = publicRoute.example.handler(async function* ({ input }) {
+  try {
+    while (true) {
+      yield { data: 'example' };
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  } finally {
+    // Clean up resources (unsubscribe from Redis, close connections, etc.)
+    console.log('Stream ended, cleaning up...');
+  }
+});
+```
+
+### Common Use Cases
+
+**1. Real-time counter/metrics:**
+```typescript
+// Contract
+export const metricsStream = oc
+  .output(eventIterator(z.object({ cpu: z.number(), memory: z.number() })));
+
+// Server
+const metrics = publicRoute.metricsStream.handler(async function* () {
+  while (true) {
+    yield { cpu: getCpuUsage(), memory: getMemoryUsage() };
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+});
+```
+
+**2. Chat messages (with pub/sub):**
+```typescript
+// Contract
+export const chatStream = oc
+  .input(z.object({ roomId: z.string() }))
+  .output(eventIterator(z.object({ id: z.string(), message: z.string() })));
+
+// Server (with Redis pub/sub)
+const chat = publicRoute.chatStream.handler(async function* ({ input }) {
+  const channel = `room:${input.roomId}`;
+
+  try {
+    for await (const message of subscribeToRedis(channel)) {
+      yield message;
+    }
+  } finally {
+    await unsubscribeFromRedis(channel);
+  }
+});
+```
+
+**3. AI streaming responses:**
+```typescript
+// Contract
+export const aiStream = oc
+  .input(z.object({ prompt: z.string() }))
+  .output(eventIterator(z.object({ token: z.string() })));
+
+// Server
+const ai = publicRoute.aiStream.handler(async function* ({ input }) {
+  const stream = await openai.chat.completions.create({
+    messages: [{ role: 'user', content: input.prompt }],
+    stream: true,
+  });
+
+  for await (const chunk of stream) {
+    const token = chunk.choices[0]?.delta?.content;
+    if (token) yield { token };
+  }
+});
+```
+
+### Best Practices
+
+1. **Always use `eventIterator()` in contracts** - This is required for streaming endpoints
+2. **Implement cleanup** - Use finally blocks to clean up resources when streams end
+3. **Handle errors** - Wrap generators in try/catch for proper error handling
+4. **Limit stream lifetime** - Implement timeouts or max event counts for long-running streams
+5. **Use lastEventId** - Support resume for better UX on reconnections
+6. **Monitor memory** - Be cautious with infinite loops and ensure proper cleanup
+7. **Type safety** - Let ORPC infer types from contracts automatically
+
+### Global Notification System
+
+The web template includes a pre-configured real-time notification system using ORPC event iterators and Sonner toasts.
+
+**Implementation pattern:**
+
+1. **NotificationSubscriber component** (`src/components/NotificationSubscriber.tsx`):
+   - Subscribes to `orpc.subscriptions.notifications` on mount
+   - Displays incoming notifications as toasts based on type (success, error, warning, info)
+   - Automatically cleans up subscription on unmount
+   - Returns null (doesn't render anything)
+
+2. **Root integration** (`src/routes/__root.tsx`):
+   - Renders `<Toaster position="top-right" richColors closeButton />` from Sonner
+   - Renders `<NotificationSubscriber />` to establish the subscription
+   - Both are placed at the root level so they persist across route changes
+
+**Example usage:**
+
+```typescript
+import { useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { orpc } from '@/lib/api-client';
+
+export function NotificationSubscriber() {
+  // Subscribe using experimental_liveOptions
+  const { data: notification } = useQuery({
+    ...orpc.subscriptions.notifications.experimental_liveOptions({
+      input: {},
+    }),
+    enabled: typeof window !== 'undefined',
+    refetchInterval: false,
+    retry: true,
+  });
+
+  // Display toast when notification arrives
+  useEffect(() => {
+    if (!notification) return;
+
+    toast[notification.type](notification.message, {
+      description: new Date(notification.timestamp).toLocaleTimeString(),
+    });
+  }, [notification]);
+
+  return null;
+}
+```
+
+This pattern is ideal for:
+- App-wide notifications
+- Real-time system alerts
+- Background task updates
+- User-specific notifications (with authentication middleware)
+
+### Resources
+
+- [ORPC Event Iterator Documentation](https://orpc.dev/docs/event-iterator)
+- [ORPC OpenAI Streaming Example](https://orpc.dev/docs/examples/openai-streaming)
+- [ORPC Durable Iterator Integration](https://orpc.dev/docs/integrations/durable-iterator)
+- [Sonner Toast Library](https://sonner.emilkowal.ski/)

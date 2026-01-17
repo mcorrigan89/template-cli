@@ -436,14 +436,14 @@ ${options.packageManager} run dev
 
 ## Environment Setup
 
-A \`.env\` file has been created with default values. Update it with your configuration:
+A \`.env\` file has been created with default values. The file contains:
 
-\`\`\`bash
-# Edit .env with your actual values
-DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
-BETTER_AUTH_SECRET="your-secret-key"
-BETTER_AUTH_URL="http://localhost:3001"
-\`\`\`
+- **For local development**: \`DATABASE_URL=postgresql://postgres:postgres@localhost:5432/myapp\`
+- **For Docker**: Change host from \`localhost\` to \`postgres\` in DATABASE_URL
+- **PostgreSQL credentials**: Configure \`POSTGRES_USER\`, \`POSTGRES_PASSWORD\`, \`POSTGRES_DB\`
+- **Better Auth**: Set \`BETTER_AUTH_SECRET\` and \`BETTER_AUTH_URL\`
+
+Docker Compose automatically reads from \`.env\` and uses variable substitution, so you can customize all settings in one place.
 
 ### Running Migrations
 
@@ -551,13 +551,13 @@ async function generateDockerCompose(targetDir: string, options: MonorepoOptions
     dockerCompose += `    ports:\n`;
     dockerCompose += `      - '5432:5432'\n`;
     dockerCompose += `    environment:\n`;
-    dockerCompose += `      POSTGRES_USER: postgres\n`;
-    dockerCompose += `      POSTGRES_PASSWORD: postgres\n`;
-    dockerCompose += `      POSTGRES_DB: myapp\n`;
+    dockerCompose += `      POSTGRES_USER: \${POSTGRES_USER:-postgres}\n`;
+    dockerCompose += `      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD:-postgres}\n`;
+    dockerCompose += `      POSTGRES_DB: \${POSTGRES_DB:-myapp}\n`;
     dockerCompose += `    volumes:\n`;
     dockerCompose += `      - postgres-data:/var/lib/postgresql/data\n`;
     dockerCompose += `    healthcheck:\n`;
-    dockerCompose += `      test: ['CMD-SHELL', 'pg_isready -U postgres']\n`;
+    dockerCompose += `      test: ['CMD-SHELL', 'pg_isready -U \${POSTGRES_USER:-postgres}']\n`;
     dockerCompose += `      interval: 5s\n`;
     dockerCompose += `      timeout: 5s\n`;
     dockerCompose += `      retries: 5\n`;

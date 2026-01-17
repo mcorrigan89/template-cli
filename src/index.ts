@@ -304,6 +304,7 @@ async function createRootStructure(targetDir: string, options: MonorepoOptions, 
   // Root package.json
   const hasAppTemplates = options.selectedTemplates.some(t => t.type === 'app');
   const appTemplates = options.selectedTemplates.filter(t => t.type === 'app');
+  const hasDatabase = options.selectedTemplates.some(t => t.name === 'database');
 
   // Generate app-specific dev commands
   const appDevScripts: Record<string, string> = {};
@@ -328,6 +329,11 @@ async function createRootStructure(targetDir: string, options: MonorepoOptions, 
       lint: 'pnpm run -r lint',
       test: 'pnpm run -r test',
       clean: 'pnpm run -r clean',
+      ...(hasDatabase && {
+        'db:generate': `pnpm --filter ${options.workspacePrefix}/database db:generate`,
+        'db:migrate': `pnpm --filter ${options.workspacePrefix}/database db:migrate`,
+        'migrate': `pnpm --filter ${options.workspacePrefix}/database migrate`
+      }),
       ...(hasAppTemplates && {
         'docker:up': 'docker-compose up',
         'docker:up:build': 'docker-compose up --build',

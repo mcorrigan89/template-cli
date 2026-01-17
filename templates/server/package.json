@@ -11,6 +11,9 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
+    "db:generate": "pnpm --filter @template/database db:generate",
+    "db:migrate": "pnpm --filter @template/database db:migrate",
+    "migrate": "pnpm --filter @template/database migrate",
     "test": "echo \"No tests yet\"",
     "lint": "eslint",
     "format": "prettier",

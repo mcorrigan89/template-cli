@@ -14,6 +14,7 @@ import { AppDomain } from './domain/domain.ts';
 import { AuthService, authSymbol } from './lib/auth.ts';
 import { di, loggerSymbol } from './lib/di.ts';
 import { routerImplementation } from './routes/index.ts';
+import { setupWebSocketServer } from './lib/websocket.ts';
 
 const env = getSharedEnv();
 
@@ -135,8 +136,12 @@ const server = serve(
   },
   (info) => {
     logger.info(`Server started on http://localhost:${info.port}`);
+    logger.info(`WebSocket server available at ws://localhost:${info.port}/ws`);
   }
 );
+
+// Set up WebSocket server on the same HTTP server
+setupWebSocketServer(server);
 
 process.on('SIGINT', () => {
   server.close();

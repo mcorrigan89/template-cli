@@ -7,6 +7,7 @@ import { and, desc, eq, isNotNull } from 'drizzle-orm';
 import { db } from '@template/database';
 import { member, session as sessionTable } from '@template/database/schema';
 import { getSharedEnv } from '@template/env/shared';
+import { notificationBus } from './notification-bus.ts';
 import { di } from './di.ts';
 
 async function getActiveOrganization(userId: string) {
@@ -58,9 +59,12 @@ export const auth = betterAuth({
     tanstackStartCookies(),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
-        // Log both URLs - use the appropriate one based on platform
-        console.log(`Magic link for ${email}:`);
-        console.log(`  Web: ${url}`);
+        // In dev mode, publish to the dev bus instead of sending email
+        await notificationBus.publish('notification', {
+          type: 'info',
+          message: `Magic link for ${email}`,
+          description: url,
+        });
       },
     }),
     organization({

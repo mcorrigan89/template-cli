@@ -57,12 +57,10 @@ export const auth = betterAuth({
   plugins: [
     tanstackStartCookies(),
     magicLink({
-      sendMagicLink: async ({ email, token, url }) => {
+      sendMagicLink: async ({ email, url }) => {
         // Log both URLs - use the appropriate one based on platform
-        const mobileUrl = `mega://callback?token=${token}`;
         console.log(`Magic link for ${email}:`);
         console.log(`  Web: ${url}`);
-        console.log(`  Mobile: ${mobileUrl}`);
       },
     }),
     organization({

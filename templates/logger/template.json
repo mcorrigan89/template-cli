@@ -1,6 +1,6 @@
 {
-  "name": "contract",
+  "name": "logger",
   "type": "package",
-  "description": "oRPC contract definitions",
+  "description": "Logging utilities and configurations",
   "default": true
 }

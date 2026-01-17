@@ -70,9 +70,6 @@ importers:
 
   templates/database:
     dependencies:
-      dotenv:
-        specifier: ^17.2.3
-        version: 17.2.3
       drizzle-orm:
         specifier: ^0.41.0
         version: 0.41.0(@prisma/client@5.22.0)(@types/pg@8.16.0)(better-sqlite3@12.6.0)(kysely@0.28.9)(pg@8.17.1)
@@ -95,6 +92,9 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^8.24.0
         version: 8.53.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      dotenv-cli:
+        specifier: ^11.0.0
+        version: 11.0.0
       drizzle-kit:
         specifier: ^0.31.8
         version: 0.31.8

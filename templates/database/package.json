@@ -7,16 +7,15 @@
     "./schema": "./src/schemas/index.ts"
   },
   "scripts": {
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "migrate": "tsx migrate.ts",
+    "db:generate": "dotenv -e ../../.env -- drizzle-kit generate",
+    "db:migrate": "dotenv -e ../../.env -- drizzle-kit migrate",
+    "migrate": "dotenv -e ../../.env -- tsx migrate.ts",
     "test": "echo \"No tests yet\"",
     "lint": "eslint",
     "format": "prettier",
     "check": "prettier --write . && eslint --fix"
   },
   "dependencies": {
-    "dotenv": "^17.2.3",
     "drizzle-orm": "^0.41.0",
     "pg": "^8.16.3"
   },
@@ -26,6 +25,7 @@
     "@types/pg": "^8.16.0",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
     "@typescript-eslint/parser": "^8.24.0",
+    "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.8",
     "eslint": "^9.18.0",
     "typescript-eslint": "^8.24.0",

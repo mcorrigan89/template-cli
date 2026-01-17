@@ -52,6 +52,9 @@ npm create my-template
   - **Server** - Hono API server with TypeScript and tsup
   - **Database** - Drizzle ORM with PostgreSQL and migrations
   - **Contract** - oRPC contract definitions for type-safe APIs
+  - **UI** - Shadcn UI component library with React 19 and Tailwind CSS
+  - **Env** - Type-safe environment variable management with Zod
+  - **Logger** - Logging utilities and configurations
 - 🔧 **Optional Features**:
   - ESLint & Prettier
   - Changesets (versioning)
@@ -131,6 +134,28 @@ pnpm docker:logs      # View logs
 - **oRPC** contract definitions
 - **Shared types** between client and server
 - **Full type safety** across the stack
+
+### UI Package (`packages/ui/`)
+- **Shadcn** component library built on @base-ui/react
+- **React 19** with React Compiler
+- **Tailwind CSS v4** for styling
+- **Class Variance Authority** for component variants
+- **Lucide React** icons
+- **Vitest** for component testing
+- Exported components, hooks, and utilities
+
+### Env Package (`packages/env/`)
+- **Type-safe environment variables** with Zod validation
+- **Runtime validation** for all environment configs
+- **Shared schema** across client and server
+- **Type inference** for full IDE support
+- Prevents runtime errors from missing or invalid env vars
+
+### Logger Package (`packages/logger/`)
+- **Logging utilities** for consistent logging across workspaces
+- **Shared configuration** for logging standards
+- **Type-safe logging** interfaces
+- Centralized logging setup for the monorepo
 
 ## 🐳 Docker Architecture
 

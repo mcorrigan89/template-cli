@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
+import { spawn } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -190,6 +191,14 @@ async function create(): Promise<void> {
   console.log(chalk.green(`\n📦 Creating monorepo in ${targetDir}...`));
 
   await scaffoldMonorepo(targetDir, options);
+
+  // Install dependencies
+  try {
+    await installDependencies(targetDir);
+  } catch (error) {
+    console.log(chalk.yellow('\n⚠️  Failed to install dependencies automatically.'));
+    console.log(chalk.gray(`Please run: cd ${options.monorepoName} && pnpm install\n`));
+  }
 
   console.log(chalk.green('\n✨ Monorepo created successfully!\n'));
   printNextSteps(options);
@@ -633,10 +642,33 @@ async function addFeatures(targetDir: string, options: MonorepoOptions, template
   await fs.writeJson(pkgJsonPath, rootPackageJson, { spaces: 2 });
 }
 
+async function installDependencies(targetDir: string): Promise<void> {
+  console.log(chalk.blue('\n📦 Installing dependencies...'));
+
+  return new Promise((resolve, reject) => {
+    const install = spawn('pnpm', ['install'], {
+      cwd: targetDir,
+      stdio: 'inherit',
+      shell: true
+    });
+
+    install.on('close', (code) => {
+      if (code !== 0) {
+        reject(new Error(`pnpm install exited with code ${code}`));
+      } else {
+        resolve();
+      }
+    });
+
+    install.on('error', (err) => {
+      reject(err);
+    });
+  });
+}
+
 function printNextSteps(options: MonorepoOptions): void {
   console.log(chalk.cyan('📝 Next steps:\n'));
   console.log(chalk.white(`  cd ${options.monorepoName}`));
-  console.log(chalk.white(`  ${options.packageManager} install`));
   console.log(chalk.white(`  ${options.packageManager} run dev\n`));
 
   if (options.features.includes('changesets')) {

@@ -7,6 +7,6 @@ interface ImportMetaEnv {
   // Add more client env variables here as you define them in client.ts
 }
 
-interface ImportMeta {
+export interface ImportMeta {
   readonly env: ImportMetaEnv;
 }

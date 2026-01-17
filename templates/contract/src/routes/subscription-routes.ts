@@ -1,4 +1,4 @@
-import { oc, eventIterator } from '@orpc/contract';
+import { eventIterator, oc } from '@orpc/contract';
 import { z } from 'zod';
 
 // Real-time notification subscription

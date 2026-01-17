@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { orpc } from '@/lib/api-client';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 /**
  * NotificationSubscriber component

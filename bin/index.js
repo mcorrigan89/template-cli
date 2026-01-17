@@ -270,10 +270,10 @@ async function createRootStructure(targetDir, options, templatesDir) {
     // pnpm-workspace.yaml
     await fs.writeFile(path.join(targetDir, 'pnpm-workspace.yaml'), `packages:\n  - 'apps/*'\n  - 'packages/*'\n`);
     await fs.writeJson(path.join(targetDir, 'package.json'), rootPackageJson, { spaces: 2 });
-    // Copy .env.example from base template
+    // Copy .env.example from base template as .env
     const envExamplePath = path.join(templatesDir, 'base', '.env.example');
     if (await fs.pathExists(envExamplePath)) {
-        await fs.copy(envExamplePath, path.join(targetDir, '.env.example'));
+        await fs.copy(envExamplePath, path.join(targetDir, '.env'));
     }
     // Generate root-level docker-compose.yml if any app templates are selected
     if (hasAppTemplates) {
@@ -286,6 +286,7 @@ dist
 build
 .next
 *.log
+.env
 .env*.local
 .DS_Store
 coverage
@@ -340,6 +341,33 @@ ${options.packageManager} run dev:${t.name}`).join('')}
 # Run development
 ${options.packageManager} run dev
 \`\`\``;
+    const envSetupSection = hasDatabase
+        ? `
+
+## Environment Setup
+
+A \`.env\` file has been created with default values. Update it with your configuration:
+
+\`\`\`bash
+# Edit .env with your actual values
+DATABASE_URL="postgresql://user:password@localhost:5432/mydb"
+BETTER_AUTH_SECRET="your-secret-key"
+BETTER_AUTH_URL="http://localhost:3001"
+\`\`\`
+
+### Running Migrations
+
+\`\`\`bash
+# Generate migration from schema changes
+${options.packageManager} run db:generate
+
+# Apply migrations to database
+${options.packageManager} run db:migrate
+
+# Or run migrations programmatically
+${options.packageManager} run migrate
+\`\`\``
+        : '';
     const readme = `
 # ${options.monorepoName}
 
@@ -355,6 +383,7 @@ ${options.packageManager} run dev
 # Build all
 ${options.packageManager} run build
 \`\`\`
+${envSetupSection}
 ${devCommandsSection}
 ${dockerSection}
 
@@ -380,13 +409,11 @@ async function generateDockerCompose(targetDir, options) {
         const envVars = {
             web: [
                 'NODE_ENV: production',
-                'API_URL: http://server:3001',
-                ...(hasDatabase ? ['DATABASE_URL: postgresql://postgres:postgres@postgres:5432/myapp'] : [])
+                'API_URL: http://server:3001'
             ],
             server: [
                 'NODE_ENV: production',
-                'PORT: 3001',
-                ...(hasDatabase ? ['DATABASE_URL: postgresql://postgres:postgres@postgres:5432/myapp'] : [])
+                'PORT: 3001'
             ]
         };
         const dependencies = template.name === 'web'
@@ -399,6 +426,8 @@ async function generateDockerCompose(targetDir, options) {
         dockerCompose += `      dockerfile: apps/${template.name}/Dockerfile\n`;
         dockerCompose += `    ports:\n`;
         dockerCompose += `      - '${portMap[template.name] || '3000:3000'}'\n`;
+        dockerCompose += `    env_file:\n`;
+        dockerCompose += `      - .env\n`;
         dockerCompose += `    environment:\n`;
         (envVars[template.name] || ['NODE_ENV: production']).forEach(env => {
             dockerCompose += `      ${env}\n`;
@@ -440,8 +469,8 @@ async function generateDockerCompose(targetDir, options) {
         dockerCompose += `    build:\n`;
         dockerCompose += `      context: .\n`;
         dockerCompose += `      dockerfile: packages/database/Dockerfile.migrate\n`;
-        dockerCompose += `    environment:\n`;
-        dockerCompose += `      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/myapp\n`;
+        dockerCompose += `    env_file:\n`;
+        dockerCompose += `      - .env\n`;
         dockerCompose += `    depends_on:\n`;
         dockerCompose += `      postgres:\n`;
         dockerCompose += `        condition: service_healthy\n`;

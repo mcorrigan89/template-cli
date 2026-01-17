@@ -32,17 +32,30 @@ const authMiddleware = base.middleware(async ({ context, next }) => {
 const publicRoute = base.use(servicesMiddleware);
 const authorizedRoute = publicRoute.use(authMiddleware);
 
-const helloworld = publicRoute.helloworld.handler(async ({ context, input: { name } }) => {
-  context.domain.userService.getUserById(createUserContext(context), { id: 'test' }); // Example usage of the user service
+const helloworld = publicRoute.helloworld.handler(async ({ input: { name } }) => {
   return name ? `Hello, ${name}!` : 'Hello, World!';
 });
 
-const helloworldAuth = authorizedRoute.helloworld.handler(async ({ context, input: { name } }) => {
-  context.domain.userService.getUserById(createUserContext(context), { id: 'test' }); // Example usage of the user service
+const helloworldAuth = authorizedRoute.helloworld.handler(async ({ input: { name } }) => {
   return name ? `Hello, ${name}!` : 'Hello, World!';
+});
+
+const currentUser = authorizedRoute.auth.currentUser.handler(async ({ context }) => {
+  const userEntity = await context.domain.userService.currentUser(createUserContext(context));
+  if (!userEntity) {
+    return null;
+  }
+  return {
+    id: userEntity.id,
+    name: userEntity.name,
+    email: userEntity.email,
+  };
 });
 
 export const routerImplementation = base.router({
   helloworld,
   helloworldAuth,
+  auth: {
+    currentUser,
+  },
 });

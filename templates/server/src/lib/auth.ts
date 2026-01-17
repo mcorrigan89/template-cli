@@ -7,8 +7,8 @@ import { and, desc, eq, isNotNull } from 'drizzle-orm';
 import { db } from '@template/database';
 import { member, session as sessionTable } from '@template/database/schema';
 import { getSharedEnv } from '@template/env/shared';
-import { notificationBus } from './notification-bus.ts';
 import { di } from './di.ts';
+import { notificationBus } from './notification-bus.ts';
 
 async function getActiveOrganization(userId: string) {
   // First, try to get the most recent session's active organization

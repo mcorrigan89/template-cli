@@ -1,7 +1,10 @@
+import { getServerEnv } from '@template/env/server';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schemas from './schemas/index.ts';
 
-export const db = drizzle(process.env.DATABASE_URL!, {
+const env = getServerEnv();
+
+export const db = drizzle(env.DATABASE_URL, {
   schema: {
     ...schemas,
   },

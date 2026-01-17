@@ -254,7 +254,10 @@ async function createRootStructure(targetDir, options, templatesDir) {
             ...(hasDatabase && {
                 'db:generate': `pnpm --filter ${options.workspacePrefix}/database db:generate`,
                 'db:migrate': `pnpm --filter ${options.workspacePrefix}/database db:migrate`,
-                'migrate': `pnpm --filter ${options.workspacePrefix}/database migrate`
+                'migrate': `pnpm --filter ${options.workspacePrefix}/database migrate`,
+                'db:dev:up': 'docker-compose -f docker-compose.dev.yml up -d',
+                'db:dev:down': 'docker-compose -f docker-compose.dev.yml down',
+                'db:dev:logs': 'docker-compose -f docker-compose.dev.yml logs -f'
             }),
             ...(hasAppTemplates && {
                 'docker:up': 'docker-compose up',
@@ -274,6 +277,13 @@ async function createRootStructure(targetDir, options, templatesDir) {
     const envExamplePath = path.join(templatesDir, 'base', '.env.example');
     if (await fs.pathExists(envExamplePath)) {
         await fs.copy(envExamplePath, path.join(targetDir, '.env'));
+    }
+    // Copy docker-compose.dev.yml if database is selected
+    if (hasDatabase) {
+        const dockerComposeDevPath = path.join(templatesDir, 'base', 'docker-compose.dev.yml');
+        if (await fs.pathExists(dockerComposeDevPath)) {
+            await fs.copy(dockerComposeDevPath, path.join(targetDir, 'docker-compose.dev.yml'));
+        }
     }
     // Generate root-level docker-compose.yml if any app templates are selected
     if (hasAppTemplates) {
@@ -354,6 +364,27 @@ A \`.env\` file has been created with default values. The file contains:
 - **Better Auth**: Set \`BETTER_AUTH_SECRET\` and \`BETTER_AUTH_URL\`
 
 Docker Compose automatically reads from \`.env\` and uses variable substitution, so you can customize all settings in one place.
+
+### Local Development with Docker Postgres
+
+Run just PostgreSQL in Docker while running your app locally:
+
+\`\`\`bash
+# Start PostgreSQL in Docker
+${options.packageManager} run db:dev:up
+
+# Run migrations
+${options.packageManager} run migrate
+
+# Run your app locally (loads .env automatically)
+${options.packageManager} run dev
+
+# Stop PostgreSQL
+${options.packageManager} run db:dev:down
+
+# View PostgreSQL logs
+${options.packageManager} run db:dev:logs
+\`\`\`
 
 ### Running Migrations
 

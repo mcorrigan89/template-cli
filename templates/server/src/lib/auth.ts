@@ -99,5 +99,7 @@ export const auth = betterAuth({
 });
 
 export type AuthService = typeof auth;
-export const authSybmol = Symbol.for('AuthService');
-di.bind<AuthService>(authSybmol).toConstantValue(auth);
+export type Session = typeof auth.$Infer.Session;
+
+export const authSymbol = Symbol.for('AuthService');
+di.bind<AuthService>(authSymbol).toConstantValue(auth);

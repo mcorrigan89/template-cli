@@ -7,11 +7,12 @@ import { RPCHandler } from '@orpc/server/fetch';
 import { CORSPlugin } from '@orpc/server/plugins';
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
 import { getSharedEnv } from '@template/env/shared';
-import { logger } from '@template/logger';
+import { Logger, logger } from '@template/logger';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { AuthService, authSybmol } from './lib/auth.ts';
-import { di } from './lib/di.ts';
+import { AppDomain } from './domain/domain.ts';
+import { AuthService, authSymbol } from './lib/auth.ts';
+import { di, loggerSymbol } from './lib/di.ts';
 import { routerImplementation } from './routes/index.ts';
 
 const env = getSharedEnv();
@@ -73,7 +74,7 @@ app.use(
 
 app.get('/', (c) => c.text('API!'));
 
-const auth = di.get<AuthService>(authSybmol);
+const auth = di.get<AuthService>(authSymbol);
 
 app.on(['POST', 'GET'], '/api/auth/*', (c) => {
   const expoOrigin = c.req.header('expo-origin');
@@ -89,10 +90,15 @@ app.on(['POST', 'GET'], '/api/auth/*', (c) => {
 });
 
 app.use('/rpc/*', async (c, next) => {
+  const logger = di.get<Logger>(loggerSymbol);
+  const domain = di.get<AppDomain>(AppDomain);
+
   const { matched, response } = await handler.handle(c.req.raw, {
     prefix: '/rpc',
     context: {
       headers: c.req.raw.headers,
+      domain,
+      logger,
     },
   });
 
@@ -104,10 +110,14 @@ app.use('/rpc/*', async (c, next) => {
 });
 
 app.use('/api/*', async (c, next) => {
+  const logger = di.get<Logger>(loggerSymbol);
+  const domain = di.get<AppDomain>(AppDomain);
   const { matched, response } = await openApiHandler.handle(c.req.raw, {
     prefix: '/api',
     context: {
       headers: c.req.raw.headers,
+      domain,
+      logger,
     },
   });
 

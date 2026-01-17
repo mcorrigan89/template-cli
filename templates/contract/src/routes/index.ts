@@ -5,12 +5,11 @@ import {
 } from '@orpc/contract';
 import { z } from 'zod';
 
-const helloworld = oc
-  .input(z.object({ name: z.string().optional() }))
-  .output(z.string());
+const helloworld = oc.input(z.object({ name: z.string().optional() })).output(z.string());
 
 export const contract = {
   helloworld,
+  helloworldAuth: helloworld,
 };
 
 export type Inputs = InferContractRouterInputs<typeof contract>;

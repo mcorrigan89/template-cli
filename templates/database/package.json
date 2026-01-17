@@ -16,6 +16,7 @@
     "check": "prettier --write . && eslint --fix"
   },
   "dependencies": {
+    "dotenv": "^17.2.3",
     "drizzle-orm": "^0.41.0",
     "pg": "^8.16.3"
   },

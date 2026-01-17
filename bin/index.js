@@ -229,6 +229,7 @@ async function createRootStructure(targetDir, options, templatesDir) {
     // Root package.json
     const hasAppTemplates = options.selectedTemplates.some(t => t.type === 'app');
     const appTemplates = options.selectedTemplates.filter(t => t.type === 'app');
+    const hasDatabase = options.selectedTemplates.some(t => t.name === 'database');
     // Generate app-specific dev commands
     const appDevScripts = {};
     appTemplates.forEach(template => {
@@ -250,6 +251,11 @@ async function createRootStructure(targetDir, options, templatesDir) {
             lint: 'pnpm run -r lint',
             test: 'pnpm run -r test',
             clean: 'pnpm run -r clean',
+            ...(hasDatabase && {
+                'db:generate': `pnpm --filter ${options.workspacePrefix}/database db:generate`,
+                'db:migrate': `pnpm --filter ${options.workspacePrefix}/database db:migrate`,
+                'migrate': `pnpm --filter ${options.workspacePrefix}/database migrate`
+            }),
             ...(hasAppTemplates && {
                 'docker:up': 'docker-compose up',
                 'docker:up:build': 'docker-compose up --build',
@@ -264,6 +270,11 @@ async function createRootStructure(targetDir, options, templatesDir) {
     // pnpm-workspace.yaml
     await fs.writeFile(path.join(targetDir, 'pnpm-workspace.yaml'), `packages:\n  - 'apps/*'\n  - 'packages/*'\n`);
     await fs.writeJson(path.join(targetDir, 'package.json'), rootPackageJson, { spaces: 2 });
+    // Copy .env.example from base template
+    const envExamplePath = path.join(templatesDir, 'base', '.env.example');
+    if (await fs.pathExists(envExamplePath)) {
+        await fs.copy(envExamplePath, path.join(targetDir, '.env.example'));
+    }
     // Generate root-level docker-compose.yml if any app templates are selected
     if (hasAppTemplates) {
         await generateDockerCompose(targetDir, options);

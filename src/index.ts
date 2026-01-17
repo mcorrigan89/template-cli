@@ -354,6 +354,12 @@ async function createRootStructure(targetDir: string, options: MonorepoOptions, 
 
   await fs.writeJson(path.join(targetDir, 'package.json'), rootPackageJson, { spaces: 2 });
 
+  // Copy .env.example from base template
+  const envExamplePath = path.join(templatesDir, 'base', '.env.example');
+  if (await fs.pathExists(envExamplePath)) {
+    await fs.copy(envExamplePath, path.join(targetDir, '.env.example'));
+  }
+
   // Generate root-level docker-compose.yml if any app templates are selected
   if (hasAppTemplates) {
     await generateDockerCompose(targetDir, options);

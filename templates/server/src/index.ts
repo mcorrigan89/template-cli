@@ -23,7 +23,7 @@ const handler = new RPCHandler(routerImplementation, {
     }),
     new LoggingHandlerPlugin({
       logger,
-      generateId: ({ request }) => crypto.randomUUID(),
+      generateId: () => crypto.randomUUID(),
       logRequestAbort: true,
     }),
   ],

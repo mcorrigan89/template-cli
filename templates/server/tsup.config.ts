@@ -11,6 +11,6 @@ export default defineConfig({
   bundle: true,
   external: [
     // Mark all node_modules as external (don't bundle them)
-    /^[^.\/]|^\.[^.\/]|^\.\.[^\/]/,
+    /^[^./]|^\.[^./]|^\.\.[^/]/,
   ],
 });

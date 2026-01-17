@@ -44,7 +44,7 @@ export const auth = betterAuth({
     provider: 'pg', // or "mysql", "sqlite"
   }),
   baseURL: getSharedEnv().SERVER_URL,
-  trustedOrigins: (request) => {
+  trustedOrigins: () => {
     // const origin = request?.headers?.get('origin')
     // Allow requests with no origin (mobile apps) or no request object
     // if (!origin) return true
@@ -66,7 +66,7 @@ export const auth = betterAuth({
       },
     }),
     organization({
-      sendInvitationEmail: async ({ email, invitation, organization }, request) => {
+      sendInvitationEmail: async ({ email, organization }) => {
         console.log(`Send invitation email to ${email} for organization ${organization.id}`);
       },
     }),

@@ -12,7 +12,7 @@ const servicesMiddleware = base.middleware(async ({ next }) => {
 
 const publicRoute = base.use(servicesMiddleware);
 
-const helloworld = publicRoute.helloworld.handler(async ({ context, input: { name } }) => {
+const helloworld = publicRoute.helloworld.handler(async ({ input: { name } }) => {
   return name ? `Hello, ${name}!` : 'Hello, World!';
 });
 

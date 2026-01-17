@@ -1,6 +1,7 @@
 import { orpc } from '@/lib/api-client';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
+import { Button } from '@template/ui/components/ui/button';
 
 export const Route = createFileRoute('/')({ component: HomePage });
 
@@ -10,5 +11,17 @@ function HomePage() {
       input: {},
     })
   );
-  return <div className="min-h-screen bg-background">{data}</div>;
+
+  function handleButtonClick() {
+    alert('Button clicked!');
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <div>{data}</div>
+      <Button variant={'secondary'} onClick={handleButtonClick}>
+        Button
+      </Button>
+    </div>
+  );
 }

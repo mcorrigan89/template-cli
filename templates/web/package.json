@@ -19,6 +19,7 @@
     "@template/contract": "workspace:*",
     "@template/env": "workspace:*",
     "@template/server": "workspace:*",
+    "@template/ui": "workspace:*",
     "@orpc/client": "^1.13.2",
     "@orpc/contract": "^1.13.2",
     "@orpc/server": "^1.13.2",

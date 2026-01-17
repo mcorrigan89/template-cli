@@ -351,6 +351,9 @@ importers:
       '@template/server':
         specifier: workspace:*
         version: link:../server
+      '@template/ui':
+        specifier: workspace:*
+        version: link:../ui
       '@typescript/native-preview':
         specifier: 7.0.0-dev.20251223.1
         version: 7.0.0-dev.20251223.1

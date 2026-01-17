@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@template/ui/lib/utils'
 
 function Label({ className, ...props }: React.ComponentProps<'label'>) {
   return (

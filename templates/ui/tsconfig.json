@@ -25,7 +25,7 @@
     "emitDecoratorMetadata": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@template/ui/*": ["./src/*"]
     }
   }
 }

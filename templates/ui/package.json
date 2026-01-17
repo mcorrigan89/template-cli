@@ -1,12 +1,14 @@
 {
-  "name": "@mega/web",
+  "name": "@template/ui",
   "private": true,
   "type": "module",
+  "exports": {
+    "./styles.css": "./src/styles.css",
+    "./lib/*": "./src/lib/*.ts",
+    "./components/*": "./src/components/*.tsx",
+    "./hooks/*": "./src/hooks/*.ts"
+  },
   "scripts": {
-    "start": "dotenv -- node .output/server/index.mjs",
-    "dev": "vite dev --port 3000",
-    "build": "vite build",
-    "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint",
     "format": "prettier",

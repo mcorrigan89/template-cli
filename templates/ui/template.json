@@ -1,0 +1,6 @@
+{
+  "name": "ui",
+  "type": "package",
+  "description": "Shadcn UI library",
+  "default": true
+}

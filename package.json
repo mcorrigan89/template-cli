@@ -22,10 +22,14 @@
   "bin": {
     "create-my-template": "./bin/index.js"
   },
-  "files": ["bin", "templates"],
+  "files": [
+    "bin",
+    "templates"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "pnpm --parallel --filter './templates/*' dev",
+    "lint": "pnpm --parallel --filter './templates/*' lint",
     "start": "node bin/index.js",
     "prepare": "tsc",
     "prepare-templates": "node scripts/prepare-templates.js",

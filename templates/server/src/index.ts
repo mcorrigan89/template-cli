@@ -6,15 +6,15 @@ import { onError } from '@orpc/server';
 import { RPCHandler } from '@orpc/server/fetch';
 import { CORSPlugin } from '@orpc/server/plugins';
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
+import { getSharedEnv } from '@template/env/shared';
+import { logger } from '@template/logger';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { routerImplementation } from './routes/index.ts';
-import { logger } from '@template/logger';
-import { diContainer } from './lib/di.ts';
 import { AuthService, authSybmol } from './lib/auth.ts';
-import { getSharedEnv } from '@template/env/shared';
+import { diContainer } from './lib/di.ts';
+import { routerImplementation } from './routes/index.ts';
 
-const env = getSharedEnv()
+const env = getSharedEnv();
 
 const handler = new RPCHandler(routerImplementation, {
   plugins: [
@@ -73,21 +73,20 @@ app.use(
 
 app.get('/', (c) => c.text('API!'));
 
-const auth = diContainer.get<AuthService>(authSybmol)
+const auth = diContainer.get<AuthService>(authSybmol);
 
 app.on(['POST', 'GET'], '/api/auth/*', (c) => {
-  const expoOrigin = c.req.header('expo-origin')
+  const expoOrigin = c.req.header('expo-origin');
   if (expoOrigin) {
-    c.req.raw.headers.set('Origin', expoOrigin)
+    c.req.raw.headers.set('Origin', expoOrigin);
   }
   try {
-    return auth.handler(c.req.raw)
+    return auth.handler(c.req.raw);
   } catch (error) {
-    logger.error(error, 'Auth handler error:')
-    return c.text('Internal Server Error', 500)
+    logger.error(error, 'Auth handler error:');
+    return c.text('Internal Server Error', 500);
   }
-})
-
+});
 
 app.use('/rpc/*', async (c, next) => {
   const { matched, response } = await handler.handle(c.req.raw, {

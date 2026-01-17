@@ -4,10 +4,10 @@ import { admin, magicLink, organization } from 'better-auth/plugins';
 import { tanstackStartCookies } from 'better-auth/tanstack-start';
 import { and, desc, eq, isNotNull } from 'drizzle-orm';
 
-import { member, session as sessionTable } from '@template/database/schema';
 import { db } from '@template/database';
-import { diContainer } from './di.ts';
+import { member, session as sessionTable } from '@template/database/schema';
 import { getSharedEnv } from '@template/env/shared';
+import { diContainer } from './di.ts';
 
 async function getActiveOrganization(userId: string) {
   // First, try to get the most recent session's active organization

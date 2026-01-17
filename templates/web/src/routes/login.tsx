@@ -1,8 +1,5 @@
-import { useState } from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { Button } from '@template/ui/components/ui/button';
-import { Input } from '@template/ui/components/ui/input';
-import { Label } from '@template/ui/components/ui/label';
 import {
   Card,
   CardContent,
@@ -11,8 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@template/ui/components/ui/card';
+import { Input } from '@template/ui/components/ui/input';
+import { Label } from '@template/ui/components/ui/label';
+import { useState } from 'react';
 
 import { signIn } from '@/lib/auth-client';
+import { useSharedEnv } from '@template/env/shared';
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -30,9 +31,10 @@ function LoginPage() {
     setIsLoading(true);
 
     try {
+      const env = useSharedEnv();
       const result = await signIn.magicLink({
         email,
-        callbackURL: '/dashboard',
+        callbackURL: `${env.CLIENT_URL}/auth/callback`,
       });
 
       if (result.error) {

@@ -7,7 +7,7 @@ import { and, desc, eq, isNotNull } from 'drizzle-orm';
 import { db } from '@template/database';
 import { member, session as sessionTable } from '@template/database/schema';
 import { getSharedEnv } from '@template/env/shared';
-import { diContainer } from './di.ts';
+import { di } from './di.ts';
 
 async function getActiveOrganization(userId: string) {
   // First, try to get the most recent session's active organization
@@ -100,4 +100,4 @@ export const auth = betterAuth({
 
 export type AuthService = typeof auth;
 export const authSybmol = Symbol.for('AuthService');
-diContainer.bind<AuthService>(authSybmol).toConstantValue(auth);
+di.bind<AuthService>(authSybmol).toConstantValue(auth);

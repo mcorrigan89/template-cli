@@ -11,7 +11,7 @@ import { logger } from '@template/logger';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { AuthService, authSybmol } from './lib/auth.ts';
-import { diContainer } from './lib/di.ts';
+import { di } from './lib/di.ts';
 import { routerImplementation } from './routes/index.ts';
 
 const env = getSharedEnv();
@@ -73,7 +73,7 @@ app.use(
 
 app.get('/', (c) => c.text('API!'));
 
-const auth = diContainer.get<AuthService>(authSybmol);
+const auth = di.get<AuthService>(authSybmol);
 
 app.on(['POST', 'GET'], '/api/auth/*', (c) => {
   const expoOrigin = c.req.header('expo-origin');

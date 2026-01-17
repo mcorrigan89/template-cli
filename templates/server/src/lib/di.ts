@@ -1,5 +1,5 @@
 import { Container } from 'inversify';
 
-export const diContainer = new Container({
+export const di = new Container({
   autobind: true,
 });

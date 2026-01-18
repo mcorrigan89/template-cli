@@ -3,12 +3,30 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { Button } from '@template/ui/components/ui/button';
 
-export const Route = createFileRoute('/')({ component: HomePage });
+export const Route = createFileRoute('/')({
+  component: HomePage,
+  loader: async ({ context }) => {
+    const currentUser = await context.queryClient.fetchQuery(orpc.auth.currentUser.queryOptions());
+
+    context.queryClient.ensureQueryData(
+      orpc.helloworld.queryOptions({
+        input: {
+          name: currentUser?.name ? currentUser.name : undefined,
+        },
+      })
+    );
+
+    return { currentUser };
+  },
+});
 
 function HomePage() {
+  const { currentUser } = Route.useLoaderData();
   const { data } = useQuery(
     orpc.helloworld.queryOptions({
-      input: {},
+      input: {
+        name: currentUser?.name ? currentUser.name : undefined,
+      },
     })
   );
 
@@ -18,7 +36,13 @@ function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Link to="/login">Login</Link> | <Link to="/signup">Sign Up</Link>
+      {!currentUser ? (
+        <>
+          <Link to="/login">Login</Link> | <Link to="/signup">Sign Up</Link>
+        </>
+      ) : (
+        <Link to="/dashboard">Dashboard</Link>
+      )}
       <div className="flex flex-col items-center justify-center py-20">
         <h1 className="mb-4 text-4xl font-bold">Welcome to the Home Page</h1>
         <p className="mb-8 text-lg">Message from server: {data}</p>

@@ -60,11 +60,16 @@ export const auth = betterAuth({
     magicLink({
       sendMagicLink: async ({ email, url }) => {
         // In dev mode, publish to the dev bus instead of sending email
-        await notificationBus.publish('notification', {
-          type: 'info',
-          message: `Magic link for ${email}`,
-          description: url,
-        });
+        if (getSharedEnv().NODE_ENV === 'development') {
+          await notificationBus.publish('notification', {
+            type: 'link',
+            message: `Magic link for ${email}`,
+            description: 'Click to login',
+            link: url,
+          });
+        }
+
+        console.log(`Send magic link to ${email}: ${url}`);
       },
     }),
     organization({

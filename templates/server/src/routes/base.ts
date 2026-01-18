@@ -12,22 +12,31 @@ const servicesMiddleware = base.middleware(async ({ next }) => {
   });
 });
 
-const authMiddleware = base.middleware(async ({ context, next }) => {
+const authenticatedMiddleware = base.middleware(async ({ context, next }) => {
   const sessionData = await auth.api.getSession({
     headers: context.headers,
   });
 
-  if (!sessionData?.session || !sessionData?.user) {
-    throw new ORPCError('UNAUTHORIZED');
-  }
+  // if (!sessionData?.session || !sessionData?.user) {
+  //   throw new ORPCError('UNAUTHORIZED');
+  // }
 
   return next({
     context: {
-      session: sessionData.session,
-      user: sessionData.user,
+      session: sessionData?.session,
+      user: sessionData?.user,
     },
   });
 });
 
+const authorizedMiddleware = base.middleware(async ({ context, next }) => {
+  if (!context.user) {
+    throw new ORPCError('FORBIDDEN');
+  }
+
+  return next();
+});
+
 export const publicRoute = base.use(servicesMiddleware);
-export const authorizedRoute = publicRoute.use(authMiddleware);
+export const authenticatedRoute = publicRoute.use(authenticatedMiddleware);
+export const authorizedRoute = authenticatedRoute.use(authorizedMiddleware);

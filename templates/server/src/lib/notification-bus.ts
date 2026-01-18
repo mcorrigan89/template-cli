@@ -7,9 +7,10 @@ import { createMessageBus } from './message-bus/index.ts';
  */
 const notificationEvents = {
   notification: z.object({
-    type: z.enum(['info', 'success', 'warning', 'error']),
+    type: z.enum(['info', 'success', 'warning', 'error', 'link']),
     message: z.string(),
     description: z.string().optional(),
+    link: z.string().optional(),
   }),
 } as const;
 

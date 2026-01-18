@@ -8,8 +8,10 @@ const notifications = publicRoute.subscriptions.notifications.handler(async func
   // Queue to hold incoming events from the message bus
   const queue: Array<{
     id: string;
-    type: 'info' | 'warning' | 'error' | 'success';
+    type: 'info' | 'warning' | 'error' | 'success' | 'link';
     message: string;
+    description?: string;
+    link?: string;
     timestamp: string;
   }> = [];
   let resolver: (() => void) | null = null;
@@ -19,7 +21,9 @@ const notifications = publicRoute.subscriptions.notifications.handler(async func
     queue.push({
       id: crypto.randomUUID(),
       type: payload.type,
-      message: payload.description ? `${payload.message}: ${payload.description}` : payload.message,
+      message: payload.message,
+      description: payload.description,
+      link: payload.link,
       timestamp: new Date().toISOString(),
     });
     // Wake up the generator if it's waiting

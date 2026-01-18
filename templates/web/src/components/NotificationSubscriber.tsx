@@ -48,6 +48,18 @@ export function NotificationSubscriber() {
         });
         break;
       case 'info':
+      case 'link':
+        toast(notification.message, {
+          description: notification.message,
+          action: {
+            key: 'view',
+            label: 'Link',
+            onClick: () => {
+              window.open(notification.link);
+            },
+          },
+        });
+        break;
       default:
         toast.info(notification.message, {
           description: new Date(notification.timestamp).toLocaleTimeString(),

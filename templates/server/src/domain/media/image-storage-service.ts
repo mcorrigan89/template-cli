@@ -41,7 +41,7 @@ export class ImageStorageService implements ImageStorage {
     const filePath = path.join(this.basePath, filename);
     const imageBuffer = await fs.readFile(filePath);
 
-    return sharp(imageBuffer).blur({ sigma: 20 }).toBuffer();
+    return sharp(imageBuffer).toBuffer();
   }
 
   public getImageUrl(filename: string): string {

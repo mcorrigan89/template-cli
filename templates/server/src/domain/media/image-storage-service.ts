@@ -40,8 +40,7 @@ export class ImageStorageService implements ImageStorage {
   public async getImageBlob(filename: string): Promise<Buffer> {
     const filePath = path.join(this.basePath, filename);
     const imageBuffer = await fs.readFile(filePath);
-
-    return sharp(imageBuffer).toBuffer();
+    return imageBuffer;
   }
 
   public getImageUrl(filename: string): string {

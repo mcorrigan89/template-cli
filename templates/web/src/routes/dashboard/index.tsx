@@ -1,18 +1,18 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button } from '@template/ui/components/ui/button';
+import { Button } from '@template/ui/components/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@template/ui/components/ui/card';
+} from '@template/ui/components/card';
 
 import { orpc } from '@/lib/api-client';
 import { signOut } from '@/lib/auth-client';
 import { useQuery } from '@tanstack/react-query';
 
-export const Route = createFileRoute('/dashboard')({
+export const Route = createFileRoute('/dashboard/')({
   component: DashboardPage,
   beforeLoad: async ({ context }) => {
     await context.queryClient.prefetchQuery(orpc.auth.currentUser.queryOptions());

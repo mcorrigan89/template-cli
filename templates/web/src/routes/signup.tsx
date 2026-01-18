@@ -1,6 +1,6 @@
 import { createFileRoute, Link, redirect } from '@tanstack/react-router';
 import { useSharedEnv } from '@template/env/shared';
-import { Button } from '@template/ui/components/ui/button';
+import { Button } from '@template/ui/components/button';
 import {
   Card,
   CardContent,
@@ -8,9 +8,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@template/ui/components/ui/card';
-import { Input } from '@template/ui/components/ui/input';
-import { Label } from '@template/ui/components/ui/label';
+} from '@template/ui/components/card';
+import { Input } from '@template/ui/components/input';
+import { Label } from '@template/ui/components/label';
 import { useState } from 'react';
 
 import { orpc } from '@/lib/api-client';

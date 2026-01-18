@@ -1,7 +1,7 @@
 import { orpc } from '@/lib/api-client';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { Button } from '@template/ui/components/ui/button';
+import { Button } from '@template/ui/components/button';
 
 export const Route = createFileRoute('/')({
   component: HomePage,

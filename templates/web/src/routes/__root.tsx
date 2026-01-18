@@ -1,11 +1,13 @@
+import { TanStackDevtools } from '@tanstack/react-devtools';
+import { FormDevtoolsPanel } from '@tanstack/react-form-devtools';
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
-import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
-import { FormDevtoolsPanel } from '@tanstack/react-form-devtools';
-import { TanStackDevtools } from '@tanstack/react-devtools';
+import { Toaster } from 'sonner';
 
+import { NotificationSubscriber } from '@/components/NotificationSubscriber';
+import { type QueryClient } from '@tanstack/react-query';
 import appCss from '../styles.css?url';
-import type { QueryClient } from '@tanstack/react-query';
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -35,12 +37,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang="en" suppressHydrationWarning={true} className="dark">
       <head>
         <HeadContent />
       </head>
       <body>
         {children}
+        <Toaster position="top-right" richColors closeButton />
+        <NotificationSubscriber />
         <TanStackDevtools
           config={{
             position: 'bottom-right',

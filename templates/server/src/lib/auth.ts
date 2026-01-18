@@ -8,6 +8,7 @@ import { db } from '@template/database';
 import { member, session as sessionTable } from '@template/database/schema';
 import { getSharedEnv } from '@template/env/shared';
 import { di } from './di.ts';
+import { notificationBus } from './notification-bus.ts';
 
 async function getActiveOrganization(userId: string) {
   // First, try to get the most recent session's active organization
@@ -57,12 +58,13 @@ export const auth = betterAuth({
   plugins: [
     tanstackStartCookies(),
     magicLink({
-      sendMagicLink: async ({ email, token, url }) => {
-        // Log both URLs - use the appropriate one based on platform
-        const mobileUrl = `mega://callback?token=${token}`;
-        console.log(`Magic link for ${email}:`);
-        console.log(`  Web: ${url}`);
-        console.log(`  Mobile: ${mobileUrl}`);
+      sendMagicLink: async ({ email, url }) => {
+        // In dev mode, publish to the dev bus instead of sending email
+        await notificationBus.publish('notification', {
+          type: 'info',
+          message: `Magic link for ${email}`,
+          description: url,
+        });
       },
     }),
     organization({

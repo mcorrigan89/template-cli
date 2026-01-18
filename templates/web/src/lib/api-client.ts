@@ -36,4 +36,7 @@ const getClientLink = createIsomorphicFn()
 
 const link = getClientLink();
 const client: ContractRouterClient<typeof contract> = createORPCClient(link);
+
+// Create TanStack Query utilities for ORPC
+// Subscriptions use Server-Sent Events (SSE) via event iterators
 export const orpc = createTanstackQueryUtils(client);

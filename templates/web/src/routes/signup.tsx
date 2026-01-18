@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, redirect } from '@tanstack/react-router';
 import { useSharedEnv } from '@template/env/shared';
 import { Button } from '@template/ui/components/ui/button';
 import {
@@ -13,10 +13,19 @@ import { Input } from '@template/ui/components/ui/input';
 import { Label } from '@template/ui/components/ui/label';
 import { useState } from 'react';
 
+import { orpc } from '@/lib/api-client';
 import { signIn } from '@/lib/auth-client';
 
 export const Route = createFileRoute('/signup')({
   component: SignupPage,
+  beforeLoad: async ({ context }) => {
+    const currentUser = await context.queryClient.fetchQuery(orpc.auth.currentUser.queryOptions());
+    if (currentUser) {
+      throw redirect({
+        to: '/dashboard',
+      });
+    }
+  },
 });
 
 function SignupPage() {

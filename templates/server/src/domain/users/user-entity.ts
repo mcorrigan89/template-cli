@@ -1,8 +1,5 @@
 import { session, user } from '@template/database/schema';
-import { getSharedEnv } from '@template/env/shared';
 import { ImageEntity, ImageModel } from '../media/image-entity.ts';
-
-const env = getSharedEnv();
 
 export type UserModel = typeof user.$inferSelect;
 export type SessionModel = typeof session.$inferSelect;

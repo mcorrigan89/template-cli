@@ -37,9 +37,11 @@ export class ImageStorageService implements ImageStorage {
     };
   }
 
-  public getImageBlob(filename: string): Promise<Buffer> {
+  public async getImageBlob(filename: string): Promise<Buffer> {
     const filePath = path.join(this.basePath, filename);
-    return fs.readFile(filePath);
+    const imageBuffer = await fs.readFile(filePath);
+
+    return sharp(imageBuffer).blur({ sigma: 20 }).toBuffer();
   }
 
   public getImageUrl(filename: string): string {

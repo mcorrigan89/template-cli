@@ -57,7 +57,92 @@ const organizationById = publicRoute.organization.byId.handler(async ({ input, c
     id: organization.id,
     name: organization.name,
     slug: organization.slug,
+    logo: organization.logo,
+    createdAt: organization.createdAt,
   };
+});
+
+const listOrganizations = authenticatedRoute.organization.list.handler(async ({ context }) => {
+  const organizations = await context.domain.organizationService.listUserOrganizations(
+    createUserContext(context),
+    context.headers
+  );
+  return organizations.map((org) => ({
+    id: org.id,
+    name: org.name,
+    slug: org.slug,
+    logo: org.logo ?? null,
+    createdAt: org.createdAt,
+  }));
+});
+
+const createOrganization = authenticatedRoute.organization.create.handler(
+  async ({ input, context }) => {
+    const organization = await context.domain.organizationService.createOrganization(
+      createUserContext(context),
+      {
+        name: input.name,
+        slug: input.slug,
+        logo: input.logo,
+      },
+      context.headers
+    );
+    return {
+      id: organization.id,
+      name: organization.name,
+      slug: organization.slug,
+      logo: organization.logo ?? null,
+      createdAt: organization.createdAt,
+    };
+  }
+);
+
+const setActiveOrganization = authenticatedRoute.organization.setActive.handler(
+  async ({ input, context }) => {
+    const result = await context.domain.organizationService.setActiveOrganization(
+      createUserContext(context),
+      { organizationId: input.organizationId },
+      context.headers
+    );
+    if (!result) {
+      return null;
+    }
+    return {
+      id: result.id,
+      name: result.name,
+      slug: result.slug,
+      logo: result.logo ?? null,
+      createdAt: result.createdAt,
+    };
+  }
+);
+
+const getActiveOrganization = authenticatedRoute.organization.getActive.handler(
+  async ({ context }) => {
+    const result = await context.domain.organizationService.getActiveOrganization(
+      createUserContext(context),
+      context.headers
+    );
+    if (!result) {
+      return null;
+    }
+    return {
+      id: result.id,
+      name: result.name,
+      slug: result.slug,
+      logo: result.logo ?? null,
+      createdAt: result.createdAt,
+    };
+  }
+);
+
+const checkSlug = authenticatedRoute.organization.checkSlug.handler(async ({ input, context }) => {
+  const result = await context.domain.organizationService.checkSlug(
+    createUserContext(context),
+    input.slug,
+    context.headers
+  );
+  return { available: result.status };
 });
 
 export const routerImplementation = base.router({
@@ -68,6 +153,11 @@ export const routerImplementation = base.router({
   },
   organization: {
     byId: organizationById,
+    list: listOrganizations,
+    create: createOrganization,
+    setActive: setActiveOrganization,
+    getActive: getActiveOrganization,
+    checkSlug: checkSlug,
   },
   subscriptions: subscriptionRoutes,
 });

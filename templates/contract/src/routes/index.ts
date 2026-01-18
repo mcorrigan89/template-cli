@@ -6,7 +6,14 @@ import {
 import { z } from 'zod';
 import { currentUser } from './auth-routes.ts';
 import { uploadAvatarImage } from './media-routes.ts';
-import { organizationByIdRoute } from './organization-routes.ts';
+import {
+  checkSlugRoute,
+  createOrganizationRoute,
+  getActiveOrganizationRoute,
+  listOrganizationsRoute,
+  organizationByIdRoute,
+  setActiveOrganizationRoute,
+} from './organization-routes.ts';
 import { notificationSubscription } from './subscription-routes.ts';
 
 const helloworld = oc.input(z.object({ name: z.string().optional() })).output(z.string());
@@ -19,6 +26,11 @@ export const contract = {
   },
   organization: {
     byId: organizationByIdRoute,
+    list: listOrganizationsRoute,
+    create: createOrganizationRoute,
+    setActive: setActiveOrganizationRoute,
+    getActive: getActiveOrganizationRoute,
+    checkSlug: checkSlugRoute,
   },
   subscriptions: {
     notifications: notificationSubscription,

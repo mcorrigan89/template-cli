@@ -17,7 +17,6 @@ import {
   SidebarRail,
 } from '@template/ui/components/sidebar';
 import { cn } from '@template/ui/lib/utils';
-import { LucideGitGraph } from 'lucide-react';
 import { OrganizationSwitcher } from './nav-organizations';
 import { NavUser } from './nav-user';
 import { RouteMenu } from './route-list';
@@ -31,15 +30,7 @@ export function AppSidebar({ routeList, ...props }: AppSidebarProps) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <OrganizationSwitcher
-          organizations={[
-            {
-              name: 'Acme Corp.',
-              plan: 'Enterprise',
-              logo: LucideGitGraph,
-            },
-          ]}
-        />
+        <OrganizationSwitcher />
         {/* <SearchForm /> */}
       </SidebarHeader>
       <SidebarContent>

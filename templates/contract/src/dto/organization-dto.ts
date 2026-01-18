@@ -1,9 +1,11 @@
 import { z } from 'zod';
 
 export const organizationDto = z.object({
-  id: z.uuid(),
-  name: z.string().nullable(),
-  slug: z.string().min(1).max(3),
+  id: z.string(),
+  name: z.string(),
+  slug: z.string(),
+  logo: z.string().nullable(),
+  createdAt: z.date(),
 });
 
 export type OrganizationDTO = z.infer<typeof organizationDto>;

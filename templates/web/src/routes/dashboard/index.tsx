@@ -1,5 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { Button } from '@template/ui/components/button';
+import { createFileRoute } from '@tanstack/react-router';
+
+import { orpc } from '@/lib/api-client';
+import { Avatar, AvatarFallback, AvatarImage } from '@template/ui/components/avatar';
+import { Badge } from '@template/ui/components/badge';
 import {
   Card,
   CardContent,
@@ -8,11 +11,6 @@ import {
   CardTitle,
 } from '@template/ui/components/card';
 
-import { AvatarUpload } from '@/components/AvatarUpload';
-import { orpc } from '@/lib/api-client';
-import { signOut } from '@/lib/auth-client';
-import { useQuery } from '@tanstack/react-query';
-
 export const Route = createFileRoute('/dashboard/')({
   component: DashboardPage,
   beforeLoad: async ({ context }) => {
@@ -20,101 +18,141 @@ export const Route = createFileRoute('/dashboard/')({
   },
 });
 
+const stats = [
+  { title: 'Total Users', value: '2,847', change: '+12.5%', trend: 'up' },
+  { title: 'Active Sessions', value: '1,234', change: '+8.2%', trend: 'up' },
+  { title: 'Revenue', value: '$48,352', change: '+23.1%', trend: 'up' },
+];
+
+const recentActivity = [
+  {
+    id: 1,
+    user: 'Sarah Chen',
+    email: 'sarah@example.com',
+    action: 'Created new project',
+    time: '2 minutes ago',
+    avatar: 'http://localhost:3000/media/seed-data/profile.jpeg',
+  },
+  {
+    id: 2,
+    user: 'Marcus Johnson',
+    email: 'marcus@example.com',
+    action: 'Updated billing info',
+    time: '15 minutes ago',
+    avatar: 'https://images.unsplash.com/photo-1570158268183-d296b2892211?q=80&w=987',
+  },
+  {
+    id: 3,
+    user: 'Emily Davis',
+    email: 'emily@example.com',
+    action: 'Invited team member',
+    time: '1 hour ago',
+    avatar: null,
+  },
+  {
+    id: 4,
+    user: 'Alex Rivera',
+    email: 'alex@example.com',
+    action: 'Upgraded to Pro plan',
+    time: '3 hours ago',
+    avatar: null,
+  },
+  {
+    id: 5,
+    user: 'Jordan Kim',
+    email: 'jordan@example.com',
+    action: 'Exported analytics report',
+    time: '5 hours ago',
+    avatar: null,
+  },
+];
+
+const quickActions = [
+  { title: 'Create Project', description: 'Start a new project from scratch' },
+  { title: 'Invite Team', description: 'Add members to your workspace' },
+  { title: 'View Reports', description: 'Access analytics and insights' },
+  { title: 'Manage API Keys', description: 'Configure integrations' },
+];
+
 function DashboardPage() {
-  const navigate = useNavigate();
-  const { data: currentUser, isLoading } = useQuery(orpc.currentUser.me.queryOptions());
-
-  async function handleSignOut() {
-    await signOut();
-    navigate({ to: '/login' });
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!currentUser?.session) {
-    navigate({ to: '/login' });
-    return null;
-  }
-
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="mx-auto">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, {currentUser.name}</p>
-          </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            Sign out
-          </Button>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <AvatarUpload userId={currentUser.id} currentAvatarUrl={currentUser.imageUrl} />
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile</CardTitle>
-              <CardDescription>Your account information</CardDescription>
+    <div className="flex flex-col gap-6">
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {stats.map((stat) => (
+          <Card key={stat.title} size="sm">
+            <CardHeader className="pb-2">
+              <CardDescription>{stat.title}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div>
-                <span className="text-sm text-muted-foreground">Name:</span>
-                <p className="font-medium">{currentUser.name}</p>
+            <CardContent>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-semibold">{stat.value}</span>
+                <Badge variant="secondary" className="text-xs">
+                  {stat.change}
+                </Badge>
               </div>
-              <div>
-                <span className="text-sm text-muted-foreground">Email:</span>
-                <p className="font-medium">{currentUser.email}</p>
-              </div>
-              {currentUser.emailVerified && (
-                <div>
-                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                    Email verified
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Recent Activity */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+            <CardDescription>Latest actions across your workspace</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentActivity.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-center gap-4 rounded-lg border border-border/50 bg-muted/30 p-3"
+                >
+                  <Avatar size="sm">
+                    <AvatarImage src={activity.avatar ?? undefined} />
+                    <AvatarFallback>
+                      {activity.user
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{activity.user}</p>
+                    <p className="truncate text-sm text-muted-foreground">{activity.action}</p>
+                  </div>
+                  <span className="text-xs whitespace-nowrap text-muted-foreground">
+                    {activity.time}
                   </span>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Session</CardTitle>
-              <CardDescription>Current session details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div>
-                <span className="text-sm text-muted-foreground">Session ID:</span>
-                <p className="font-mono text-xs">{currentUser.session.id}</p>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">Created:</span>
-                <p className="text-sm">
-                  {new Date(currentUser.session.createdAt).toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">Expires:</span>
-                <p className="text-sm">
-                  {new Date(currentUser.session.expiresAt).toLocaleString()}
-                </p>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">User-Agent:</span>
-                <p className="text-sm">{currentUser.session.userAgent}</p>
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">IP Address:</span>
-                <p className="text-sm">{currentUser.session.ipAddress}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Quick Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Common tasks and shortcuts</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {quickActions.map((action) => (
+                <button
+                  key={action.title}
+                  className="w-full rounded-lg border border-border/50 bg-muted/30 p-3 text-left transition-colors hover:bg-muted/50"
+                >
+                  <p className="font-medium">{action.title}</p>
+                  <p className="text-sm text-muted-foreground">{action.description}</p>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

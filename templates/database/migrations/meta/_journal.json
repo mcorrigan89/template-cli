@@ -8,6 +8,27 @@
       "when": 1768667519073,
       "tag": "0000_steep_stone_men",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1768753978613,
+      "tag": "0001_left_mandarin",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1768754991673,
+      "tag": "0002_minor_natasha_romanoff",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1768755255466,
+      "tag": "0003_large_pestilence",
+      "breakpoints": true
     }
   ]
 }

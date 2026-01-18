@@ -2,16 +2,18 @@ import { UserContext } from '@/lib/context.ts';
 import { inject, injectable } from 'inversify';
 import { UserService } from '../users/user-service.ts';
 import { ImageRepository } from './image-repository.ts';
+import { ImageStorageService } from './image-storage-service.ts';
 
 @injectable()
 export class MediaService {
   constructor(
+    @inject(ImageStorageService) private imageStorageService: ImageStorageService,
     @inject(ImageRepository) private imageRepository: ImageRepository,
     @inject(UserService) private userService: UserService
   ) {}
 
   public getImageBlob(filename: string): Promise<Buffer> {
-    return this.imageRepository.getImageBlob(filename);
+    return this.imageStorageService.getImageBlob(filename);
   }
 
   public async uploadAvatarImage(
@@ -25,12 +27,25 @@ export class MediaService {
     if (!user) {
       throw new Error(`User with id ${userId} not found.`);
     }
-    const uploadedImageUrl = await this.imageRepository.saveImage(
-      imageBuffer,
-      `avatar_${userId}.webp`
-    );
+
+    const assetId = `avatar_${userId}_${crypto.randomUUID()}.webp`;
+
+    const { height, width } = await this.imageStorageService.saveImage({
+      buffer: imageBuffer,
+      filename: assetId,
+    });
+
+    const imageEntity = await this.imageRepository.saveImage({
+      id: crypto.randomUUID(),
+      assetId: assetId,
+      ownerId: userId,
+      width: width,
+      height: height,
+    });
+
+    user.avatarId = imageEntity.id;
     await this.userService.save(ctx, user);
 
-    return uploadedImageUrl;
+    return this.imageStorageService.getImageUrl(assetId);
   }
 }

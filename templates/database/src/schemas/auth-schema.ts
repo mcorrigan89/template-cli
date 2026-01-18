@@ -1,5 +1,6 @@
 import { relations, sql } from 'drizzle-orm';
 import { boolean, index, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { image } from './image-schema.ts';
 
 export const user = pgTable('user', {
   id: uuid('id')
@@ -8,7 +9,7 @@ export const user = pgTable('user', {
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').default(false).notNull(),
-  image: text('image'),
+  imageId: uuid('image_id').references(() => image.id, { onDelete: 'cascade' }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -147,11 +148,15 @@ export const invitation = pgTable(
   ]
 );
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
   members: many(member),
   invitations: many(invitation),
+  image: one(image, {
+    fields: [user.imageId],
+    references: [image.id],
+  }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

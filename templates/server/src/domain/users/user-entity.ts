@@ -1,32 +1,68 @@
 import { session, user } from '@template/database/schema';
 import { getSharedEnv } from '@template/env/shared';
+import { ImageEntity, ImageModel } from '../media/image-entity.ts';
 
 const env = getSharedEnv();
 
-type UserModel = typeof user.$inferSelect;
-type SessionModel = typeof session.$inferSelect;
+export type UserModel = typeof user.$inferSelect;
+export type SessionModel = typeof session.$inferSelect;
 
 export class UserEntity {
   public readonly id: string;
-  public readonly name: string;
-  public readonly email: string;
-  public readonly emailVerified: boolean;
-  public readonly image?: string | null;
+  private _name: string;
+  private _email: string;
+  private _emailVerified: boolean;
+  private _avatarId?: string | null;
+  private _avatarEntity: ImageEntity | null;
 
-  private constructor(userModel: UserModel) {
+  private constructor(userModel: UserModel, imageModel?: ImageModel) {
     this.id = userModel.id;
-    this.name = userModel.name;
-    this.email = userModel.email;
-    this.emailVerified = userModel.emailVerified;
-    this.image = userModel.image;
+    this._name = userModel.name;
+    this._email = userModel.email;
+    this._emailVerified = userModel.emailVerified;
+    this._avatarId = userModel.imageId;
+    this._avatarEntity = imageModel ? ImageEntity.fromModel(imageModel) : null;
   }
 
-  get imageUrl() {
-    return this.image ? `${env.SERVER_URL}/media/${this.image}` : undefined;
+  get name() {
+    return this._name;
   }
 
-  public static fromModel(userModel: UserModel) {
-    return new UserEntity(userModel);
+  get email() {
+    return this._email;
+  }
+
+  get emailVerified() {
+    return this._emailVerified;
+  }
+
+  get avatarId() {
+    return this._avatarId ?? undefined;
+  }
+
+  set avatarId(avatarId: string | undefined) {
+    this._avatarId = avatarId ?? null;
+  }
+
+  get initials() {
+    if (!this.name) {
+      return '';
+    }
+    const names = this.name.trim().split(' ');
+    if (names.length === 1) {
+      return names[0].charAt(0).toUpperCase();
+    }
+    return (
+      names[0].charAt(0).toUpperCase() + names[names.length - 1].charAt(0).toUpperCase()
+    ).slice(0, 3);
+  }
+
+  get avatarUrl() {
+    return this._avatarEntity ? this._avatarEntity.url : undefined;
+  }
+
+  public static fromModel(userModel: UserModel, imageModel?: ImageModel) {
+    return new UserEntity(userModel, imageModel);
   }
 }
 

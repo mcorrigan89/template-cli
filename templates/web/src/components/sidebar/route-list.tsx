@@ -14,28 +14,6 @@ export type RouteMenu = {
 export const routeList: RouteMenu = [
   {
     title: 'Home',
-    routes: [
-      { title: 'Dashboard', showInSidebar: true, route: '/dashboard' },
-      {
-        title: 'Profile',
-        showInSidebar: true,
-        route: '/dashboard',
-      },
-    ],
-  },
-  {
-    title: 'Settings',
-    routes: [
-      {
-        title: 'Account',
-        showInSidebar: true,
-        route: '/dashboard',
-      },
-      {
-        title: 'Billing',
-        showInSidebar: true,
-        route: '/dashboard',
-      },
-    ],
+    routes: [{ title: 'Dashboard', showInSidebar: true, route: '/dashboard' }],
   },
 ];

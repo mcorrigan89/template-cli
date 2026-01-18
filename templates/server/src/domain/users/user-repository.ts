@@ -1,7 +1,7 @@
 import { UserContext } from '@/lib/context.ts';
 import { dbSymbol } from '@/lib/di.ts';
 import { Database } from '@template/database';
-import { session, user } from '@template/database/schema';
+import { image, session, user } from '@template/database/schema';
 import { eq } from 'drizzle-orm';
 import { inject, injectable } from 'inversify';
 import { UserEntity, UserSessionEntity } from './user-entity.ts';
@@ -11,12 +11,16 @@ export class UserRepository {
   constructor(@inject(dbSymbol) private db: Database) {}
 
   public async userById(ctx: UserContext, { id }: { id: string }): Promise<UserEntity | null> {
-    const userModel = await this.db.select().from(user).where(eq(user.id, id));
+    const userModel = await this.db
+      .select()
+      .from(user)
+      .leftJoin(image, eq(user.imageId, image.id))
+      .where(eq(user.id, id));
     if (userModel.length === 0) {
       ctx.logger.warn(`User with id ${id} not found.`);
       return null;
     }
-    return UserEntity.fromModel(userModel[0]);
+    return UserEntity.fromModel(userModel[0].user, userModel[0].image ?? undefined);
   }
 
   public async sessionByUserId(ctx: UserContext, { id }: { id: string }) {
@@ -37,7 +41,7 @@ export class UserRepository {
         name: userEntity.name,
         email: userEntity.email,
         emailVerified: userEntity.emailVerified,
-        image: userEntity.image,
+        imageId: userEntity.avatarId,
       })
       .onConflictDoUpdate({
         target: user.id,
@@ -45,7 +49,7 @@ export class UserRepository {
           name: userEntity.name,
           email: userEntity.email,
           emailVerified: userEntity.emailVerified,
-          image: userEntity.image,
+          imageId: userEntity.avatarId,
         },
       })
       .returning();

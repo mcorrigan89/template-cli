@@ -16,9 +16,10 @@ const currentUser = authenticatedRoute.currentUser.me.handler(async ({ context }
   return {
     id: userEntity.id,
     name: userEntity.name,
+    initials: userEntity.initials,
     email: userEntity.email,
     emailVerified: userEntity.emailVerified,
-    imageUrl: userEntity.imageUrl,
+    avatarUrl: userEntity.avatarUrl,
     session: {
       id: sessionEntity.id,
       createdAt: sessionEntity.createdAt,

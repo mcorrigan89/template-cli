@@ -22,25 +22,28 @@ export function AvatarUpload({ userId, currentAvatarUrl }: AvatarUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
-  const uploadMutation = useMutation({
-    ...orpc.currentUser.uploadAvatar.mutationOptions(),
-    onSuccess: (data) => {
-      toast.success('Avatar uploaded successfully!');
-      setPreview(data.imageUrl);
-      setSelectedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      // Invalidate currentUser query to refresh the user data
-      queryClient.invalidateQueries({ queryKey: ['currentUser', 'me'] });
-    },
-    onError: (error) => {
-      console.log(error);
-      toast.error('Failed to upload avatar', {
-        description: error.message,
-      });
-    },
-  });
+  const uploadMutation = useMutation(
+    orpc.currentUser.uploadAvatar.mutationOptions({
+      onSuccess: async (data) => {
+        toast.success('Avatar uploaded successfully!');
+        setPreview(data.imageUrl);
+        setSelectedFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+        // Invalidate currentUser query to refresh the user data
+        await queryClient.invalidateQueries({
+          queryKey: orpc.currentUser.me.queryKey(),
+        });
+      },
+      onError: (error) => {
+        console.log(error);
+        toast.error('Failed to upload avatar', {
+          description: error.message,
+        });
+      },
+    })
+  );
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

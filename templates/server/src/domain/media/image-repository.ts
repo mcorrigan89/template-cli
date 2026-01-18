@@ -1,63 +1,49 @@
-import { getSharedEnv } from '@template/env/shared';
-import fs from 'fs/promises';
-import { injectable } from 'inversify';
-import path from 'path';
-import sharp from 'sharp';
+import { dbSymbol } from '@/lib/di.ts';
+import { Database } from '@template/database';
+import { image } from '@template/database/schema';
+import { eq } from 'drizzle-orm';
+import { inject } from 'inversify';
 
-const MAX_DIMENSION = 1920;
+export class ImageRepository {
+  constructor(@inject(dbSymbol) private db: Database) {}
 
-interface ImageStorage {
-  saveImage(buffer: Buffer, filename: string): Promise<string>;
-  getImageUrl(filename: string): string;
-}
+  public async getImageById(id: string) {
+    const imageModel = await this.db.select().from(image).where(eq(image.id, id));
 
-@injectable()
-export class ImageRepository implements ImageStorage {
-  private basePath: string;
-  private baseUrl: string;
-
-  constructor(basePath: string = 'uploads') {
-    const env = getSharedEnv();
-    this.basePath = path.resolve(process.cwd(), '../..', basePath);
-    this.baseUrl = env.SERVER_URL;
-  }
-
-  public async saveImage(buffer: Buffer, filename: string): Promise<string> {
-    const filePath = path.join(this.basePath, filename);
-    const resizedBuffer = await this.resizeImageForSaving(buffer);
-    await fs.writeFile(filePath, resizedBuffer);
-    return this.getImageUrl(filename);
-  }
-
-  public getImageBlob(filename: string): Promise<Buffer> {
-    const filePath = path.join(this.basePath, filename);
-    return fs.readFile(filePath);
-  }
-
-  public getImageUrl(filename: string): string {
-    return `${this.baseUrl}/media/${filename}`;
-  }
-
-  private async resizeImageForSaving(buffer: Buffer) {
-    const metadata = await sharp(buffer).metadata();
-
-    if (metadata.width && metadata.height) {
-      if (metadata.width > MAX_DIMENSION || metadata.height > MAX_DIMENSION) {
-        const aspectRatio = metadata.width / metadata.height;
-        let newWidth: number;
-        let newHeight: number;
-
-        if (aspectRatio > 1) {
-          newWidth = MAX_DIMENSION;
-          newHeight = Math.round(MAX_DIMENSION / aspectRatio);
-        } else {
-          newHeight = MAX_DIMENSION;
-          newWidth = Math.round(MAX_DIMENSION * aspectRatio);
-        }
-
-        return sharp(buffer).resize(newWidth, newHeight).toFormat('webp').toBuffer();
-      }
+    if (imageModel.length === 0) {
+      return null;
     }
-    return sharp(buffer).toFormat('webp').toBuffer();
+
+    return imageModel[0];
+  }
+
+  public async saveImage(imageData: {
+    id: string;
+    assetId: string;
+    ownerId: string;
+    width: number;
+    height: number;
+  }) {
+    const result = await this.db
+      .insert(image)
+      .values({
+        id: imageData.id,
+        assetId: imageData.assetId,
+        ownerId: imageData.ownerId,
+        width: imageData.width,
+        height: imageData.height,
+      })
+      .onConflictDoUpdate({
+        target: image.id,
+        set: {
+          assetId: imageData.assetId,
+          ownerId: imageData.ownerId,
+          width: imageData.width,
+          height: imageData.height,
+        },
+      })
+      .returning();
+
+    return result[0];
   }
 }

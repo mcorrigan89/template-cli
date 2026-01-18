@@ -1,0 +1,1 @@
+ALTER TABLE "user" ALTER COLUMN "image_id" DROP NOT NULL;

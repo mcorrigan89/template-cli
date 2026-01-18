@@ -4,7 +4,7 @@ import { OpenAPIHandler } from '@orpc/openapi/fetch';
 import { OpenAPIReferencePlugin } from '@orpc/openapi/plugins';
 import { onError } from '@orpc/server';
 import { RPCHandler } from '@orpc/server/fetch';
-import { CORSPlugin } from '@orpc/server/plugins';
+import { BatchHandlerPlugin, CORSPlugin } from '@orpc/server/plugins';
 import { ZodToJsonSchemaConverter } from '@orpc/zod/zod4';
 import { getSharedEnv } from '@template/env/shared';
 import { Logger, logger } from '@template/logger';
@@ -23,6 +23,7 @@ const handler = new RPCHandler(routerImplementation, {
     new CORSPlugin({
       credentials: true,
     }),
+    new BatchHandlerPlugin(),
     new LoggingHandlerPlugin({
       logger,
       generateId: () => crypto.randomUUID(),

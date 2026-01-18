@@ -3,9 +3,10 @@ import { z } from 'zod';
 export const userDto = z.object({
   id: z.uuid(),
   name: z.string().nullable(),
+  initials: z.string().min(1).max(3),
   email: z.email(),
   emailVerified: z.boolean(),
-  imageUrl: z.url().nullish(),
+  avatarUrl: z.url().nullish(),
 });
 
 export const currentUserDto = userDto.extend({

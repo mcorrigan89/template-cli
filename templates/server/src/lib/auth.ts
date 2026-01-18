@@ -79,6 +79,14 @@ export const auth = betterAuth({
     }),
     admin(),
   ],
+  user: {
+    additionalFields: {
+      imageId: {
+        type: 'string',
+        fieldName: 'image_id',
+      },
+    },
+  },
 
   databaseHooks: {
     session: {

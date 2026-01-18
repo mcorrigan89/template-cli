@@ -1,9 +1,10 @@
+import { createORPCClient } from '@orpc/client';
 import { RPCLink } from '@orpc/client/fetch';
+import { BatchLinkPlugin } from '@orpc/client/plugins';
+import { ContractRouterClient } from '@orpc/contract';
+import { createTanstackQueryUtils } from '@orpc/tanstack-query';
 import { createIsomorphicFn } from '@tanstack/react-start';
 import { getRequestHeaders } from '@tanstack/react-start/server';
-import { createTanstackQueryUtils } from '@orpc/tanstack-query';
-import { createORPCClient } from '@orpc/client';
-import { ContractRouterClient } from '@orpc/contract';
 import { contract } from '@template/contract';
 import { getSharedEnv } from '@template/env/shared';
 
@@ -18,6 +19,16 @@ const getClientLink = createIsomorphicFn()
           credentials: 'include', // Include cookies for cross-origin requests
         });
       },
+      plugins: [
+        new BatchLinkPlugin({
+          groups: [
+            {
+              condition: () => true,
+              context: {}, // Context used for the rest of the request lifecycle
+            },
+          ],
+        }),
+      ],
     });
   })
   .server(() => {
@@ -31,6 +42,16 @@ const getClientLink = createIsomorphicFn()
           credentials: 'include', // Include cookies for cross-origin requests
         });
       },
+      plugins: [
+        new BatchLinkPlugin({
+          groups: [
+            {
+              condition: () => true,
+              context: {}, // Context used for the rest of the request lifecycle
+            },
+          ],
+        }),
+      ],
     });
   });
 

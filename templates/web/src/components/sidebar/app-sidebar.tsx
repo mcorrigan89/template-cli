@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { orpc } from '@/lib/api-client';
+import { useQuery } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
 import {
   Sidebar,
@@ -25,6 +27,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ routeList, ...props }: AppSidebarProps) {
+  const { data: currentUser } = useQuery(orpc.auth.currentUser.queryOptions());
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -75,9 +78,8 @@ export function AppSidebar({ routeList, ...props }: AppSidebarProps) {
       <SidebarFooter>
         <NavUser
           user={{
-            name: 'Sarah Chen',
-            email: 'sarah.chen@example.com',
-            avatar: 'http://localhost:3000/media/seed-data/profile.jpeg',
+            name: currentUser?.name || 'Guest',
+            email: currentUser?.email || '',
           }}
         />
       </SidebarFooter>

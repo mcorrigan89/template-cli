@@ -4,7 +4,11 @@ import { AppSidebar } from './app-sidebar';
 import { routeList } from './route-list';
 import { TopBreadcrumbs } from './top-breacrumbs';
 
-export function AppLayout({ children }: { children: React.ReactNode }) {
+interface AppLayoutProps {
+  children: React.ReactNode;
+}
+
+export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider>
       <AppSidebar routeList={routeList} />

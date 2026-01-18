@@ -142,7 +142,7 @@ export class OrganizationService {
     return result;
   }
 
-  public async getOrganizationById(ctx: UserContext, id: string) {
+  public async getOrganizationById(ctx: UserContext, { id }: { id: string }) {
     ctx.logger.info(`Service: Getting organization by ID: ${id}`);
     return this.organizationRepository.organizationById(id);
   }

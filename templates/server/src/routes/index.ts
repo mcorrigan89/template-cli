@@ -45,11 +45,29 @@ const uploadAvatarImage = authenticatedRoute.currentUser.uploadAvatar.handler(
   }
 );
 
+const organizationById = publicRoute.organization.byId.handler(async ({ input, context }) => {
+  const organization = await context.domain.organizationService.getOrganizationById(
+    createUserContext(context),
+    { id: input.id }
+  );
+  if (!organization) {
+    return null;
+  }
+  return {
+    id: organization.id,
+    name: organization.name,
+    slug: organization.slug,
+  };
+});
+
 export const routerImplementation = base.router({
   helloworld,
   currentUser: {
     me: currentUser,
     uploadAvatar: uploadAvatarImage,
+  },
+  organization: {
+    byId: organizationById,
   },
   subscriptions: subscriptionRoutes,
 });

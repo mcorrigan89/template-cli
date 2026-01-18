@@ -1,10 +1,10 @@
 import { UserContext } from '@/lib/context.ts';
 import { dbSymbol } from '@/lib/di.ts';
 import { Database } from '@template/database';
-import { user } from '@template/database/schema';
+import { session, user } from '@template/database/schema';
 import { eq } from 'drizzle-orm';
 import { inject, injectable } from 'inversify';
-import { UserEntity } from './user-entity.ts';
+import { UserEntity, UserSessionEntity } from './user-entity.ts';
 
 @injectable()
 export class UserRepository {
@@ -17,5 +17,14 @@ export class UserRepository {
       return null;
     }
     return UserEntity.fromModel(userModel[0]);
+  }
+
+  public async sessionByUserId(ctx: UserContext, { id }: { id: string }) {
+    const sessionModel = await this.db.select().from(session).where(eq(session.userId, id));
+    if (sessionModel.length === 0) {
+      ctx.logger.warn(`Session with id ${id} not found.`);
+      return null;
+    }
+    return UserSessionEntity.fromModel(sessionModel[0]);
   }
 }

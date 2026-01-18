@@ -1,4 +1,4 @@
 import { oc } from '@orpc/contract';
-import { userDto } from '../dto/user-dto.ts';
+import { currentUserDto } from '../dto/user-dto.ts';
 
-export const currentUser = oc.output(userDto.nullable());
+export const currentUser = oc.output(currentUserDto.nullable());

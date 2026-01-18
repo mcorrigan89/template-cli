@@ -7,14 +7,24 @@ const helloworld = publicRoute.helloworld.handler(async ({ input: { name } }) =>
 });
 
 const currentUser = authenticatedRoute.auth.currentUser.handler(async ({ context }) => {
-  const userEntity = await context.domain.userService.currentUser(createUserContext(context));
-  if (!userEntity) {
+  const { userEntity, sessionEntity } = await context.domain.userService.currentUser(
+    createUserContext(context)
+  );
+  if (!userEntity || !sessionEntity) {
     return null;
   }
   return {
     id: userEntity.id,
     name: userEntity.name,
     email: userEntity.email,
+    emailVerified: userEntity.emailVerified,
+    session: {
+      id: sessionEntity.id,
+      createdAt: sessionEntity.createdAt,
+      expiresAt: sessionEntity.expiresAt,
+      userAgent: sessionEntity.userAgent,
+      ipAddress: sessionEntity.ipAddress,
+    },
   };
 });
 

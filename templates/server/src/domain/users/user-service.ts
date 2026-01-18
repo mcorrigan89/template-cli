@@ -14,8 +14,12 @@ export class UserService {
   public async currentUser(ctx: UserContext) {
     ctx.logger.info('Fetching current user');
     if (ctx.currentUserId) {
-      return this.userRepository.userById(ctx, { id: ctx.currentUserId });
+      const [userEntity, sessionEntity] = await Promise.all([
+        this.userRepository.userById(ctx, { id: ctx.currentUserId }),
+        this.userRepository.sessionByUserId(ctx, { id: ctx.currentUserId }),
+      ]);
+      return { userEntity, sessionEntity };
     }
-    return null;
+    return { userEntity: null, sessionEntity: null };
   }
 }

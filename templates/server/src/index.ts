@@ -25,7 +25,7 @@ const handler = new RPCHandler(routerImplementation, {
     new LoggingHandlerPlugin({
       logger,
       generateId: () => crypto.randomUUID(),
-      logRequestAbort: true,
+      logRequestAbort: false,
     }),
   ],
   interceptors: [

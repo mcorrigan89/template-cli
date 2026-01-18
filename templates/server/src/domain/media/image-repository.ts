@@ -18,7 +18,7 @@ export class ImageRepository implements ImageStorage {
 
   constructor(basePath: string = 'uploads') {
     const env = getSharedEnv();
-    this.basePath = basePath;
+    this.basePath = path.resolve(process.cwd(), '../..', basePath);
     this.baseUrl = env.SERVER_URL;
   }
 
@@ -29,8 +29,13 @@ export class ImageRepository implements ImageStorage {
     return this.getImageUrl(filename);
   }
 
+  public getImageBlob(filename: string): Promise<Buffer> {
+    const filePath = path.join(this.basePath, filename);
+    return fs.readFile(filePath);
+  }
+
   public getImageUrl(filename: string): string {
-    return `${this.baseUrl}/${filename}`;
+    return `${this.baseUrl}/media/${filename}`;
   }
 
   private async resizeImageForSaving(buffer: Buffer) {

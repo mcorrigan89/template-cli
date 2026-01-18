@@ -1,4 +1,7 @@
 import { session, user } from '@template/database/schema';
+import { getSharedEnv } from '@template/env/shared';
+
+const env = getSharedEnv();
 
 type UserModel = typeof user.$inferSelect;
 type SessionModel = typeof session.$inferSelect;
@@ -16,6 +19,10 @@ export class UserEntity {
     this.email = userModel.email;
     this.emailVerified = userModel.emailVerified;
     this.image = userModel.image;
+  }
+
+  get imageUrl() {
+    return this.image ? `${env.SERVER_URL}/media/${this.image}` : undefined;
   }
 
   public static fromModel(userModel: UserModel) {

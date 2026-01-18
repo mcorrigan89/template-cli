@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from '@template/ui/components/card';
 
+import { AvatarUpload } from '@/components/AvatarUpload';
 import { orpc } from '@/lib/api-client';
 import { signOut } from '@/lib/auth-client';
 import { useQuery } from '@tanstack/react-query';
@@ -54,7 +55,9 @@ function DashboardPage() {
           </Button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <AvatarUpload userId={currentUser.id} currentAvatarUrl={currentUser.imageUrl} />
+
           <Card>
             <CardHeader>
               <CardTitle>Profile</CardTitle>

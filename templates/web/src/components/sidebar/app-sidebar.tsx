@@ -80,6 +80,7 @@ export function AppSidebar({ routeList, ...props }: AppSidebarProps) {
           user={{
             name: currentUser?.name || 'Guest',
             email: currentUser?.email || '',
+            avatarUrl: currentUser?.imageUrl || undefined,
           }}
         />
       </SidebarFooter>

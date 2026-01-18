@@ -11,6 +11,7 @@ import { Logger, logger } from '@template/logger';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { AppDomain } from './domain/domain.ts';
+import { MediaService } from './domain/media/media-service.ts';
 import { AuthService, authSymbol } from './lib/auth.ts';
 import { di, loggerSymbol } from './lib/di.ts';
 import { routerImplementation } from './routes/index.ts';
@@ -126,6 +127,23 @@ app.use('/api/*', async (c, next) => {
   }
 
   await next();
+});
+
+app.use('media/:filename', async (c, next) => {
+  try {
+    const filename = c.req.param('filename');
+    const mediaService = di.get<MediaService>(MediaService);
+    const imageBlob = await mediaService.getImageBlob(filename);
+
+    return new Response(imageBlob, {
+      headers: {
+        'Content-Type': 'image/webp',
+      },
+    });
+  } catch (error) {
+    logger.error(error, 'Error fetching media file:');
+    return c.text('Image not found', 404);
+  }
 });
 
 const server = serve(

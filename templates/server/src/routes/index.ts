@@ -18,6 +18,7 @@ const currentUser = authenticatedRoute.currentUser.me.handler(async ({ context }
     name: userEntity.name,
     email: userEntity.email,
     emailVerified: userEntity.emailVerified,
+    imageUrl: userEntity.imageUrl,
     session: {
       id: sessionEntity.id,
       createdAt: sessionEntity.createdAt,
@@ -30,7 +31,10 @@ const currentUser = authenticatedRoute.currentUser.me.handler(async ({ context }
 
 const uploadAvatarImage = authenticatedRoute.currentUser.uploadAvatar.handler(
   async ({ input, context }) => {
-    const { userId, imageBuffer } = input;
+    const { userId, image } = input;
+    // Convert File to Buffer
+    const arrayBuffer = await image.arrayBuffer();
+    const imageBuffer = Buffer.from(arrayBuffer);
     const imageUrl = await context.domain.mediaService.uploadAvatarImage(
       createUserContext(context),
       userId,

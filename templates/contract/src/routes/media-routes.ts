@@ -5,7 +5,7 @@ export const uploadAvatarImage = oc
   .input(
     z.object({
       userId: z.string(),
-      imageBuffer: z.instanceof(Buffer),
+      image: z.file(),
     })
   )
   .output(z.object({ imageUrl: z.string() }));

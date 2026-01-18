@@ -10,6 +10,10 @@ export class MediaService {
     @inject(UserService) private userService: UserService
   ) {}
 
+  public getImageBlob(filename: string): Promise<Buffer> {
+    return this.imageRepository.getImageBlob(filename);
+  }
+
   public async uploadAvatarImage(
     ctx: UserContext,
     userId: string,

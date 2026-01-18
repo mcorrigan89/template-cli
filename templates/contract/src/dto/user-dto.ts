@@ -5,6 +5,7 @@ export const userDto = z.object({
   name: z.string().nullable(),
   email: z.email(),
   emailVerified: z.boolean(),
+  imageUrl: z.url().nullish(),
 });
 
 export const currentUserDto = userDto.extend({

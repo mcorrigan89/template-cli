@@ -5,9 +5,9 @@ import { HeadContent, Scripts, createRootRouteWithContext } from '@tanstack/reac
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import { Toaster } from 'sonner';
 
+import { NotificationSubscriber } from '@/components/NotificationSubscriber';
 import { type QueryClient } from '@tanstack/react-query';
 import appCss from '../styles.css?url';
-import { NotificationSubscriber } from '@/components/NotificationSubscriber';
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -37,7 +37,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang="en" suppressHydrationWarning={true} className="dark">
       <head>
         <HeadContent />
       </head>

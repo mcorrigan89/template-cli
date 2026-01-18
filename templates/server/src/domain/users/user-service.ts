@@ -1,5 +1,6 @@
 import { UserContext } from '@/lib/context.ts';
 import { inject, injectable } from 'inversify';
+import { UserEntity } from './user-entity.ts';
 import { UserRepository } from './user-repository.ts';
 
 @injectable()
@@ -21,5 +22,10 @@ export class UserService {
       return { userEntity, sessionEntity };
     }
     return { userEntity: null, sessionEntity: null };
+  }
+
+  public async save(ctx: UserContext, user: UserEntity) {
+    ctx.logger.info(`Saving user with id: ${user.id}`);
+    return this.userRepository.save(ctx, user);
   }
 }

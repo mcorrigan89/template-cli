@@ -8,12 +8,14 @@ export class UserEntity {
   public readonly name: string;
   public readonly email: string;
   public readonly emailVerified: boolean;
+  public readonly image?: string | null;
 
   private constructor(userModel: UserModel) {
     this.id = userModel.id;
     this.name = userModel.name;
     this.email = userModel.email;
     this.emailVerified = userModel.emailVerified;
+    this.image = userModel.image;
   }
 
   public static fromModel(userModel: UserModel) {

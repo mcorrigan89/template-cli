@@ -6,7 +6,7 @@ import { Button } from '@template/ui/components/button';
 export const Route = createFileRoute('/')({
   component: HomePage,
   loader: async ({ context }) => {
-    const currentUser = await context.queryClient.fetchQuery(orpc.auth.currentUser.queryOptions());
+    const currentUser = await context.queryClient.fetchQuery(orpc.currentUser.me.queryOptions());
 
     context.queryClient.ensureQueryData(
       orpc.helloworld.queryOptions({

@@ -19,7 +19,7 @@ import { signIn } from '@/lib/auth-client';
 export const Route = createFileRoute('/signup')({
   component: SignupPage,
   beforeLoad: async ({ context }) => {
-    const currentUser = await context.queryClient.fetchQuery(orpc.auth.currentUser.queryOptions());
+    const currentUser = await context.queryClient.fetchQuery(orpc.currentUser.me.queryOptions());
     if (currentUser) {
       throw redirect({
         to: '/dashboard',

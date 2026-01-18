@@ -19,7 +19,7 @@ import { useSharedEnv } from '@template/env/shared';
 export const Route = createFileRoute('/login')({
   component: LoginPage,
   beforeLoad: async ({ context }) => {
-    const currentUser = await context.queryClient.fetchQuery(orpc.auth.currentUser.queryOptions());
+    const currentUser = await context.queryClient.fetchQuery(orpc.currentUser.me.queryOptions());
     if (currentUser) {
       throw redirect({
         to: '/dashboard',

@@ -27,7 +27,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function AppSidebar({ routeList, ...props }: AppSidebarProps) {
-  const { data: currentUser } = useQuery(orpc.auth.currentUser.queryOptions());
+  const { data: currentUser } = useQuery(orpc.currentUser.me.queryOptions());
   return (
     <Sidebar {...props}>
       <SidebarHeader>

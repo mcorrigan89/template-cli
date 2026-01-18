@@ -6,7 +6,7 @@ const helloworld = publicRoute.helloworld.handler(async ({ input: { name } }) =>
   return name ? `Hello, ${name}!` : 'Hello, World!';
 });
 
-const currentUser = authenticatedRoute.auth.currentUser.handler(async ({ context }) => {
+const currentUser = authenticatedRoute.currentUser.me.handler(async ({ context }) => {
   const { userEntity, sessionEntity } = await context.domain.userService.currentUser(
     createUserContext(context)
   );
@@ -28,10 +28,23 @@ const currentUser = authenticatedRoute.auth.currentUser.handler(async ({ context
   };
 });
 
+const uploadAvatarImage = authenticatedRoute.currentUser.uploadAvatar.handler(
+  async ({ input, context }) => {
+    const { userId, imageBuffer } = input;
+    const imageUrl = await context.domain.mediaService.uploadAvatarImage(
+      createUserContext(context),
+      userId,
+      imageBuffer
+    );
+    return { imageUrl };
+  }
+);
+
 export const routerImplementation = base.router({
   helloworld,
-  auth: {
-    currentUser,
+  currentUser: {
+    me: currentUser,
+    uploadAvatar: uploadAvatarImage,
   },
   subscriptions: subscriptionRoutes,
 });

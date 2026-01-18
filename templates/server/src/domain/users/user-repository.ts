@@ -27,4 +27,28 @@ export class UserRepository {
     }
     return UserSessionEntity.fromModel(sessionModel[0]);
   }
+
+  public async save(ctx: UserContext, userEntity: UserEntity): Promise<UserEntity> {
+    ctx.logger.info(`Saving user with id: ${userEntity.id}`);
+    const userModel = await this.db
+      .insert(user)
+      .values({
+        id: userEntity.id,
+        name: userEntity.name,
+        email: userEntity.email,
+        emailVerified: userEntity.emailVerified,
+        image: userEntity.image,
+      })
+      .onConflictDoUpdate({
+        target: user.id,
+        set: {
+          name: userEntity.name,
+          email: userEntity.email,
+          emailVerified: userEntity.emailVerified,
+          image: userEntity.image,
+        },
+      })
+      .returning();
+    return UserEntity.fromModel(userModel[0]);
+  }
 }

@@ -15,13 +15,13 @@ import { useQuery } from '@tanstack/react-query';
 export const Route = createFileRoute('/dashboard/')({
   component: DashboardPage,
   beforeLoad: async ({ context }) => {
-    await context.queryClient.prefetchQuery(orpc.auth.currentUser.queryOptions());
+    await context.queryClient.prefetchQuery(orpc.currentUser.me.queryOptions());
   },
 });
 
 function DashboardPage() {
   const navigate = useNavigate();
-  const { data: currentUser, isLoading } = useQuery(orpc.auth.currentUser.queryOptions());
+  const { data: currentUser, isLoading } = useQuery(orpc.currentUser.me.queryOptions());
 
   async function handleSignOut() {
     await signOut();

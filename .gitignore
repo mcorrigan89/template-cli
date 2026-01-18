@@ -143,3 +143,6 @@ vite.config.ts.timestamp-*
 .vite/
 
 # (No old CLI directory to ignore anymore)
+
+# Template packages build output
+uploads/

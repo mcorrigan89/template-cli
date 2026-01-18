@@ -1,0 +1,6 @@
+{
+  "name": "media",
+  "type": "package",
+  "description": "A media management package",
+  "default": true
+}

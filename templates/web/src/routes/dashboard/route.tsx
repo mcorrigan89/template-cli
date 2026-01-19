@@ -11,6 +11,10 @@ export const Route = createFileRoute('/dashboard')({
         to: '/login',
       });
     }
+    await Promise.all([
+      context.queryClient.prefetchQuery(orpc.organization.list.queryOptions()),
+      context.queryClient.prefetchQuery(orpc.organization.getActive.queryOptions()),
+    ]);
   },
 });
 

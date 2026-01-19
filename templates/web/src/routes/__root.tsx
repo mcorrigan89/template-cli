@@ -37,7 +37,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning={true} className="dark">
+    <html lang="en" suppressHydrationWarning={true} className="light">
       <head>
         <HeadContent />
       </head>

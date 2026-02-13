@@ -27,11 +27,11 @@
     "templates"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsgo",
     "dev": "pnpm --color --parallel --filter './templates/*' dev",
     "lint": "pnpm --color --parallel --filter './templates/*' lint",
     "start": "node bin/index.js",
-    "prepare": "tsc",
+    "prepare": "tsgo",
     "prepare-templates": "node scripts/prepare-templates.js",
     "prepublishOnly": "npm run prepare-templates && npm run build",
     "dev:server": "pnpm --filter=server dev",
@@ -50,6 +50,7 @@
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.10.0",
     "@types/prompts": "^2.4.9",
+    "@typescript/native-preview": "7.0.0-dev.20251223.1",
     "typescript": "6.0.0-beta"
   }
 }

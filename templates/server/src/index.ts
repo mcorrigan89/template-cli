@@ -130,7 +130,7 @@ app.use('/api/*', async (c, next) => {
   await next();
 });
 
-app.use('media/:filename', async (c, next) => {
+app.use('media/:filename', async (c, _next) => {
   try {
     const filename = c.req.param('filename');
     const mediaService = di.get<MediaService>(MediaService);

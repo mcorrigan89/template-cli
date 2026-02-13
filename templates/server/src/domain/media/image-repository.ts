@@ -3,6 +3,7 @@ import { Database } from '@template/database';
 import { image } from '@template/database/schema';
 import { eq } from 'drizzle-orm';
 import { inject } from 'inversify';
+import { ImageEntity } from './image-entity.ts';
 
 export class ImageRepository {
   constructor(@inject(dbSymbol) private db: Database) {}
@@ -44,6 +45,6 @@ export class ImageRepository {
       })
       .returning();
 
-    return result[0];
+    return ImageEntity.fromModel(result[0]);
   }
 }

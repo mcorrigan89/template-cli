@@ -20,6 +20,7 @@ export class UserRepository {
       ctx.logger.warn(`User with id ${id} not found.`);
       return null;
     }
+
     return UserEntity.fromModel(userModel[0].user, userModel[0].image ?? undefined);
   }
 

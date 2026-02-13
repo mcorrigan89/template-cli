@@ -1,13 +1,20 @@
-import { getServerEnv } from '@template/env/server';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schemas from './schemas/index.ts';
 
-const env = getServerEnv();
+export const createDatabase = (databaseUrl: string) => {
+  const db = drizzle(databaseUrl, {
+    schema: {
+      ...schemas,
+    },
+  });
 
-export const db = drizzle(env.DATABASE_URL, {
+  return db;
+};
+
+export type Database = ReturnType<typeof createDatabase>;
+
+export const dbMock = drizzle.mock({
   schema: {
     ...schemas,
   },
 });
-
-export type Database = typeof db;

@@ -1,1 +1,1 @@
-export { db, type Database } from './db.ts';
+export { createDatabase, dbMock, type Database } from './db.ts';

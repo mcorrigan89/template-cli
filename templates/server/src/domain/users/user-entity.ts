@@ -37,8 +37,9 @@ export class UserEntity {
     return this._avatarId ?? undefined;
   }
 
-  set avatarId(avatarId: string | undefined) {
-    this._avatarId = avatarId ?? null;
+  public setAvatar(avatar: ImageEntity | null) {
+    this._avatarId = avatar?.id ?? null;
+    this._avatarEntity = avatar ?? null;
   }
 
   get initials() {

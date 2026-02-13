@@ -43,7 +43,7 @@ export class MediaService {
       height: height,
     });
 
-    user.avatarId = imageEntity.id;
+    user.setAvatar(imageEntity);
     await this.userService.save(ctx, user);
 
     return this.imageStorageService.getImageUrl(assetId);

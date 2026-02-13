@@ -27,5 +27,6 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
-  }
+  },
+  "typescript.experimental.useTsgo": true
 }

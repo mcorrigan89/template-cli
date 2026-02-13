@@ -4,14 +4,15 @@ import { admin, magicLink, organization } from 'better-auth/plugins';
 import { tanstackStartCookies } from 'better-auth/tanstack-start';
 import { and, desc, eq, isNotNull } from 'drizzle-orm';
 
-import { db } from '@template/database';
+import { Database } from '@template/database';
 import { member, session as sessionTable } from '@template/database/schema';
 import { getSharedEnv } from '@template/env/shared';
-import { di } from './di.ts';
+import { dbSymbol, di } from './di.ts';
 import { notificationBus } from './notification-bus.ts';
 
 async function getActiveOrganization(userId: string) {
   // First, try to get the most recent session's active organization
+  const db = di.get<Database>(dbSymbol);
   const previousSession = await db.query.session.findFirst({
     where: and(eq(sessionTable.userId, userId), isNotNull(sessionTable.activeOrganizationId)),
     orderBy: desc(sessionTable.createdAt),
@@ -41,9 +42,12 @@ async function getActiveOrganization(userId: string) {
 }
 
 export const auth = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: 'pg', // or "mysql", "sqlite"
-  }),
+  database: () => {
+    const db = di.get<Database>(dbSymbol);
+    return drizzleAdapter(db, {
+      provider: 'pg', // or "mysql", "sqlite"
+    });
+  },
   baseURL: getSharedEnv().SERVER_URL,
   trustedOrigins: () => {
     // const origin = request?.headers?.get('origin')

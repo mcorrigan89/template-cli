@@ -1,11 +1,11 @@
 import { AuthService, authSymbol } from '@/lib/auth.ts';
-import { Context } from '@/lib/context.ts';
+import { UserContext } from '@/lib/context.ts';
 import { di } from '@/lib/di.ts';
 import { implement, ORPCError } from '@orpc/server';
 import { contract } from '@template/contract';
 
 const os = implement(contract);
-export const base = os.$context<Context>();
+export const base = os.$context<UserContext>();
 
 const servicesMiddleware = base.middleware(async ({ next }) => {
   return next({
@@ -19,14 +19,18 @@ const authenticatedMiddleware = base.middleware(async ({ context, next }) => {
     headers: context.headers,
   });
 
-  // if (!sessionData?.session || !sessionData?.user) {
-  //   throw new ORPCError('UNAUTHORIZED');
-  // }
+  context.logger.setUserContext({
+    ...context,
+    session: sessionData?.session,
+    user: sessionData?.user,
+    currentUserId: sessionData?.user?.id ?? null,
+  });
 
   return next({
     context: {
       session: sessionData?.session,
       user: sessionData?.user,
+      currentUserId: sessionData?.user?.id ?? null,
     },
   });
 });

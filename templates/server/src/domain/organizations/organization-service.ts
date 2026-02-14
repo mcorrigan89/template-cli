@@ -58,7 +58,7 @@ export class OrganizationService {
     input: CreateOrganizationInput,
     headers: Headers
   ) {
-    ctx.logger.info(`Service: Creating organization with slug: ${input.slug}`);
+    ctx.logger.trace(`Service: Creating organization with slug: ${input.slug}`);
 
     const result = await this.auth.api.createOrganization({
       body: {
@@ -74,18 +74,18 @@ export class OrganizationService {
       throw new Error('Failed to create organization');
     }
 
-    ctx.logger.info(`Organization created: ${result.id}`);
+    ctx.logger.trace(`Organization created: ${result.id}`);
     return result;
   }
 
   public async listUserOrganizations(ctx: UserContext, headers: Headers) {
-    ctx.logger.info('Service: Listing user organizations');
+    ctx.logger.trace('Service: Listing user organizations');
 
     const result = await this.auth.api.listOrganizations({
       headers,
     });
 
-    ctx.logger.info(`Found ${result.length} organizations for user`);
+    ctx.logger.trace(`Found ${result.length} organizations for user`);
     return result;
   }
 
@@ -94,7 +94,7 @@ export class OrganizationService {
     organizationId: string | undefined,
     headers: Headers
   ) {
-    ctx.logger.info(`Service: Getting full organization: ${organizationId ?? 'active'}`);
+    ctx.logger.trace(`Service: Getting full organization: ${organizationId ?? 'active'}`);
 
     const result = await this.auth.api.getFullOrganization({
       query: organizationId ? { organizationId } : {},
@@ -105,7 +105,7 @@ export class OrganizationService {
   }
 
   public async getActiveOrganization(ctx: UserContext, headers: Headers) {
-    ctx.logger.info(`Service: Getting active organization`);
+    ctx.logger.trace(`Service: Getting active organization`);
 
     const result = await this.auth.api.getFullOrganization({
       headers,
@@ -119,7 +119,7 @@ export class OrganizationService {
     input: SetActiveOrganizationInput,
     headers: Headers
   ) {
-    ctx.logger.info(`Service: Setting active organization: ${input.organizationId}`);
+    ctx.logger.trace(`Service: Setting active organization: ${input.organizationId}`);
 
     const result = await this.auth.api.setActiveOrganization({
       body: {
@@ -132,7 +132,7 @@ export class OrganizationService {
   }
 
   public async checkSlug(ctx: UserContext, slug: string, headers: Headers) {
-    ctx.logger.info(`Service: Checking if slug is available: ${slug}`);
+    ctx.logger.trace(`Service: Checking if slug is available: ${slug}`);
 
     const result = await this.auth.api.checkOrganizationSlug({
       body: { slug },
@@ -143,19 +143,19 @@ export class OrganizationService {
   }
 
   public async getOrganizationById(ctx: UserContext, { id }: { id: string }) {
-    ctx.logger.info(`Service: Getting organization by ID: ${id}`);
-    return this.organizationRepository.organizationById(id);
+    ctx.logger.trace(`Service: Getting organization by ID: ${id}`);
+    return this.organizationRepository.organizationById(ctx, id);
   }
 
   public async getOrganizationBySlug(ctx: UserContext, slug: string) {
-    ctx.logger.info(`Service: Getting organization by slug: ${slug}`);
-    return this.organizationRepository.organizationBySlug(slug);
+    ctx.logger.trace(`Service: Getting organization by slug: ${slug}`);
+    return this.organizationRepository.organizationBySlug(ctx, slug);
   }
 
   // Admin methods
   public async listAllOrganizations(ctx: UserContext, input: ListOrganizationsInput) {
-    ctx.logger.info('Admin: Listing all organizations');
-    return this.organizationRepository.listAll(input);
+    ctx.logger.trace('Admin: Listing all organizations');
+    return this.organizationRepository.listAll(ctx, input);
   }
 
   public async updateOrganization(
@@ -163,7 +163,7 @@ export class OrganizationService {
     input: UpdateOrganizationInput,
     headers: Headers
   ) {
-    ctx.logger.info(`Admin: Updating organization: ${input.organizationId}`);
+    ctx.logger.trace(`Admin: Updating organization: ${input.organizationId}`);
 
     const result = await this.auth.api.updateOrganization({
       body: {
@@ -178,19 +178,19 @@ export class OrganizationService {
       headers,
     });
 
-    ctx.logger.info(`Organization updated: ${input.organizationId}`);
+    ctx.logger.trace(`Organization updated: ${input.organizationId}`);
     return result;
   }
 
   public async deleteOrganization(ctx: UserContext, organizationId: string, headers: Headers) {
-    ctx.logger.info(`Admin: Deleting organization: ${organizationId}`);
+    ctx.logger.trace(`Admin: Deleting organization: ${organizationId}`);
 
     await this.auth.api.deleteOrganization({
       body: { organizationId },
       headers,
     });
 
-    ctx.logger.info(`Organization deleted: ${organizationId}`);
+    ctx.logger.trace(`Organization deleted: ${organizationId}`);
     return { success: true };
   }
 
@@ -200,7 +200,7 @@ export class OrganizationService {
     options: { limit?: number; offset?: number },
     headers: Headers
   ) {
-    ctx.logger.info(`Admin: Listing members for organization: ${organizationId}`);
+    ctx.logger.trace(`Admin: Listing members for organization: ${organizationId}`);
 
     const result = await this.auth.api.listMembers({
       query: {
@@ -211,12 +211,14 @@ export class OrganizationService {
       headers,
     });
 
-    ctx.logger.info(`Found ${result.members.length} members`);
+    ctx.logger.trace(`Found ${result.members.length} members`);
     return result;
   }
 
   public async addMember(ctx: UserContext, input: AddMemberInput, headers: Headers) {
-    ctx.logger.info(`Admin: Adding member ${input.userId} to organization ${input.organizationId}`);
+    ctx.logger.trace(
+      `Admin: Adding member ${input.userId} to organization ${input.organizationId}`
+    );
 
     const result = await this.auth.api.addMember({
       body: {
@@ -227,12 +229,12 @@ export class OrganizationService {
       headers,
     });
 
-    ctx.logger.info(`Member added to organization`);
+    ctx.logger.trace(`Member added to organization`);
     return result;
   }
 
   public async removeMember(ctx: UserContext, input: RemoveMemberInput, headers: Headers) {
-    ctx.logger.info(
+    ctx.logger.trace(
       `Admin: Removing member ${input.memberIdOrEmail} from organization ${input.organizationId}`
     );
 
@@ -244,12 +246,12 @@ export class OrganizationService {
       headers,
     });
 
-    ctx.logger.info(`Member removed from organization`);
+    ctx.logger.trace(`Member removed from organization`);
     return { success: true };
   }
 
   public async updateMemberRole(ctx: UserContext, input: UpdateMemberRoleInput, headers: Headers) {
-    ctx.logger.info(
+    ctx.logger.trace(
       `Admin: Updating role for member ${input.memberId} in organization ${input.organizationId}`
     );
 
@@ -262,7 +264,7 @@ export class OrganizationService {
       headers,
     });
 
-    ctx.logger.info(`Member role updated`);
+    ctx.logger.trace(`Member role updated`);
     return result;
   }
 }

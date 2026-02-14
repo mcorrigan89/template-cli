@@ -5,19 +5,68 @@ import { Session } from './auth.ts';
 export interface Context {
   headers: Headers;
   domain: AppDomain;
-  logger: Logger;
   session?: Session['session'];
   user?: Session['user'];
 }
 
-export interface UserContext {
-  logger: Logger;
+export interface UserContext extends Context {
+  logger: ContextLogger;
   currentUserId: string | null;
 }
 
-export function createUserContext(params: Context): UserContext {
+export class ContextLogger {
+  private userContext?: UserContext;
+  constructor(private baseLogger: Logger) {}
+
+  public setUserContext(userContext: UserContext) {
+    this.userContext = userContext;
+  }
+
+  public trace(message: string, ...args: any[]) {
+    this.baseLogger.trace(
+      {
+        userId: this.userContext?.user?.id ?? null,
+      },
+      message,
+      ...args
+    );
+  }
+
+  public info(message: string, ...args: any[]) {
+    this.baseLogger.info(
+      {
+        userId: this.userContext?.user?.id ?? null,
+      },
+      message,
+      ...args
+    );
+  }
+
+  public warn(message: string, ...args: any[]) {
+    this.baseLogger.warn(
+      {
+        userId: this.userContext?.user?.id ?? null,
+      },
+      message,
+      ...args
+    );
+  }
+
+  public error(message: string, ...args: any[]) {
+    this.baseLogger.error(
+      {
+        userId: this.userContext?.user?.id ?? null,
+      },
+      message,
+      ...args
+    );
+  }
+}
+
+export function createUserContext(params: Context, logger: Logger): UserContext {
   return {
-    logger: params.logger,
+    ...params,
+    logger: new ContextLogger(logger),
     currentUserId: params.user?.id ?? null,
   };
 }

@@ -13,6 +13,7 @@ import { cors } from 'hono/cors';
 import { AppDomain } from './domain/domain.ts';
 import { MediaService } from './domain/media/media-service.ts';
 import { AuthService, authSymbol } from './lib/auth.ts';
+import { createUserContext } from './lib/context.ts';
 import { di, loggerSymbol } from './lib/di.ts';
 import { routerImplementation } from './routes/index.ts';
 
@@ -97,11 +98,13 @@ app.use('/rpc/*', async (c, next) => {
 
   const { matched, response } = await handler.handle(c.req.raw, {
     prefix: '/rpc',
-    context: {
-      headers: c.req.raw.headers,
-      domain,
-      logger,
-    },
+    context: createUserContext(
+      {
+        headers: c.req.raw.headers,
+        domain,
+      },
+      logger
+    ),
   });
 
   if (matched) {
@@ -116,11 +119,13 @@ app.use('/api/*', async (c, next) => {
   const domain = di.get<AppDomain>(AppDomain);
   const { matched, response } = await openApiHandler.handle(c.req.raw, {
     prefix: '/api',
-    context: {
-      headers: c.req.raw.headers,
-      domain,
-      logger,
-    },
+    context: createUserContext(
+      {
+        headers: c.req.raw.headers,
+        domain,
+      },
+      logger
+    ),
   });
 
   if (matched) {

@@ -21,7 +21,7 @@ export class MediaService {
     userId: string,
     imageBuffer: Buffer
   ): Promise<string> {
-    ctx.logger.info(`Uploading avatar image for user id: ${userId}`);
+    ctx.logger.trace(`Uploading avatar image for user id: ${userId}`);
 
     const user = await this.userService.getUserById(ctx, { id: userId });
     if (!user) {

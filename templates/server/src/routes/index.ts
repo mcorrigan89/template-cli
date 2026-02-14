@@ -1,7 +1,6 @@
-import { createUserContext } from '@/lib/context.ts';
 import { dbSymbol, di } from '@/lib/di.ts';
 import { Database } from '@template/database';
-import { authenticatedRoute, base, publicRoute } from './base.ts';
+import { authorizedRoute, base, publicRoute } from './base.ts';
 import { subscriptionRoutes } from './subscriptions.ts';
 
 const helloworld = publicRoute.helloworld.handler(async ({ input: { name } }) => {
@@ -18,10 +17,8 @@ const healthy = publicRoute.healthy.handler(async () => {
   }
 });
 
-const currentUser = authenticatedRoute.currentUser.me.handler(async ({ context }) => {
-  const { userEntity, sessionEntity } = await context.domain.userService.currentUser(
-    createUserContext(context)
-  );
+const currentUser = authorizedRoute.currentUser.me.handler(async ({ context }) => {
+  const { userEntity, sessionEntity } = await context.domain.userService.currentUser(context);
   if (!userEntity || !sessionEntity) {
     return null;
   }
@@ -42,14 +39,14 @@ const currentUser = authenticatedRoute.currentUser.me.handler(async ({ context }
   };
 });
 
-const uploadAvatarImage = authenticatedRoute.currentUser.uploadAvatar.handler(
+const uploadAvatarImage = authorizedRoute.currentUser.uploadAvatar.handler(
   async ({ input, context }) => {
     const { userId, image } = input;
     // Convert File to Buffer
     const arrayBuffer = await image.arrayBuffer();
     const imageBuffer = Buffer.from(arrayBuffer);
     const imageUrl = await context.domain.mediaService.uploadAvatarImage(
-      createUserContext(context),
+      context,
       userId,
       imageBuffer
     );
@@ -58,10 +55,9 @@ const uploadAvatarImage = authenticatedRoute.currentUser.uploadAvatar.handler(
 );
 
 const organizationById = publicRoute.organization.byId.handler(async ({ input, context }) => {
-  const organization = await context.domain.organizationService.getOrganizationById(
-    createUserContext(context),
-    { id: input.id }
-  );
+  const organization = await context.domain.organizationService.getOrganizationById(context, {
+    id: input.id,
+  });
   if (!organization) {
     return null;
   }
@@ -74,9 +70,9 @@ const organizationById = publicRoute.organization.byId.handler(async ({ input, c
   };
 });
 
-const listOrganizations = authenticatedRoute.organization.list.handler(async ({ context }) => {
+const listOrganizations = authorizedRoute.organization.list.handler(async ({ context }) => {
   const organizations = await context.domain.organizationService.listUserOrganizations(
-    createUserContext(context),
+    context,
     context.headers
   );
   return organizations.map((org) => ({
@@ -88,10 +84,10 @@ const listOrganizations = authenticatedRoute.organization.list.handler(async ({ 
   }));
 });
 
-const createOrganization = authenticatedRoute.organization.create.handler(
+const createOrganization = authorizedRoute.organization.create.handler(
   async ({ input, context }) => {
     const organization = await context.domain.organizationService.createOrganization(
-      createUserContext(context),
+      context,
       {
         name: input.name,
         slug: input.slug,
@@ -109,10 +105,10 @@ const createOrganization = authenticatedRoute.organization.create.handler(
   }
 );
 
-const setActiveOrganization = authenticatedRoute.organization.setActive.handler(
+const setActiveOrganization = authorizedRoute.organization.setActive.handler(
   async ({ input, context }) => {
     const result = await context.domain.organizationService.setActiveOrganization(
-      createUserContext(context),
+      context,
       { organizationId: input.organizationId },
       context.headers
     );
@@ -129,10 +125,10 @@ const setActiveOrganization = authenticatedRoute.organization.setActive.handler(
   }
 );
 
-const getActiveOrganization = authenticatedRoute.organization.getActive.handler(
+const getActiveOrganization = authorizedRoute.organization.getActive.handler(
   async ({ context }) => {
     const result = await context.domain.organizationService.getActiveOrganization(
-      createUserContext(context),
+      context,
       context.headers
     );
     if (!result) {
@@ -148,9 +144,9 @@ const getActiveOrganization = authenticatedRoute.organization.getActive.handler(
   }
 );
 
-const checkSlug = authenticatedRoute.organization.checkSlug.handler(async ({ input, context }) => {
+const checkSlug = authorizedRoute.organization.checkSlug.handler(async ({ input, context }) => {
   const result = await context.domain.organizationService.checkSlug(
-    createUserContext(context),
+    context,
     input.slug,
     context.headers
   );

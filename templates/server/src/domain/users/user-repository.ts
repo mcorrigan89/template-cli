@@ -34,7 +34,7 @@ export class UserRepository {
   }
 
   public async save(ctx: UserContext, userEntity: UserEntity): Promise<UserEntity> {
-    ctx.logger.info(`Saving user with id: ${userEntity.id}`);
+    ctx.logger.trace(`Saving user with id: ${userEntity.id}`);
     const userModel = await this.db
       .insert(user)
       .values({

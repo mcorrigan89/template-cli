@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@hono/node-server": "1.19.9",
+    "@js-temporal/polyfill": "0.5.1",
     "@orpc/experimental-pino": "1.13.5",
     "@orpc/openapi": "1.13.5",
     "@orpc/server": "1.13.5",

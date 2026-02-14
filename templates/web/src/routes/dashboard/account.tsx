@@ -11,6 +11,7 @@ import {
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { orpc } from '@/lib/api-client';
 import { signOut } from '@/lib/auth-client';
+import { Temporal } from '@js-temporal/polyfill';
 import { useQuery } from '@tanstack/react-query';
 
 export const Route = createFileRoute('/dashboard/account')({
@@ -95,13 +96,17 @@ function RouteComponent() {
               <div>
                 <span className="text-sm text-muted-foreground">Created:</span>
                 <p className="text-sm">
-                  {new Date(currentUser.session.createdAt).toLocaleString()}
+                  {Temporal.Instant.from(currentUser.session.createdAt.toISOString())
+                    .toZonedDateTimeISO('America/New_York')
+                    .toLocaleString()}
                 </p>
               </div>
               <div>
                 <span className="text-sm text-muted-foreground">Expires:</span>
                 <p className="text-sm">
-                  {new Date(currentUser.session.expiresAt).toLocaleString()}
+                  {Temporal.Instant.from(currentUser.session.expiresAt.toISOString())
+                    .toZonedDateTimeISO('America/New_York')
+                    .toLocaleString()}
                 </p>
               </div>
               <div>

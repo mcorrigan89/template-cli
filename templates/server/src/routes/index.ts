@@ -1,6 +1,6 @@
 import { dbSymbol, di } from '@/lib/di.ts';
 import { Database } from '@template/database';
-import { authorizedRoute, base, publicRoute } from './base.ts';
+import { authenticatedRoute, authorizedRoute, base, publicRoute } from './base.ts';
 import { subscriptionRoutes } from './subscriptions.ts';
 
 const helloworld = publicRoute.helloworld.handler(async ({ input: { name } }) => {
@@ -17,7 +17,7 @@ const healthy = publicRoute.healthy.handler(async () => {
   }
 });
 
-const currentUser = authorizedRoute.currentUser.me.handler(async ({ context }) => {
+const currentUser = authenticatedRoute.currentUser.me.handler(async ({ context }) => {
   const { userEntity, sessionEntity } = await context.domain.userService.currentUser(context);
   if (!userEntity || !sessionEntity) {
     return null;

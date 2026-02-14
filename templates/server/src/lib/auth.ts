@@ -4,8 +4,9 @@ import { admin, magicLink, organization } from 'better-auth/plugins';
 import { tanstackStartCookies } from 'better-auth/tanstack-start';
 import { and, desc, eq, isNotNull } from 'drizzle-orm';
 
-import { Database } from '@template/database';
+import { createDatabase, Database } from '@template/database';
 import { member, session as sessionTable } from '@template/database/schema';
+import { getServerEnv } from '@template/env/server';
 import { getSharedEnv } from '@template/env/shared';
 import { dbSymbol, di } from './di.ts';
 import { notificationBus } from './notification-bus.ts';
@@ -41,13 +42,10 @@ async function getActiveOrganization(userId: string) {
   return recentMembership?.organizationId || null;
 }
 
-export const auth = betterAuth({
-  database: () => {
-    const db = di.get<Database>(dbSymbol);
-    return drizzleAdapter(db, {
-      provider: 'pg', // or "mysql", "sqlite"
-    });
-  },
+const auth = betterAuth({
+  database: drizzleAdapter(createDatabase(getServerEnv().DATABASE_URL), {
+    provider: 'pg', // or "mysql", "sqlite"
+  }),
   baseURL: getSharedEnv().SERVER_URL,
   trustedOrigins: () => {
     // const origin = request?.headers?.get('origin')
@@ -121,4 +119,4 @@ export type AuthService = typeof auth;
 export type Session = typeof auth.$Infer.Session;
 
 export const authSymbol = Symbol.for('AuthService');
-di.bind<AuthService>(authSymbol).toConstantValue(auth);
+di.bind<AuthService>(authSymbol).toDynamicValue(() => auth);

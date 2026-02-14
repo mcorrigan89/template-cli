@@ -1,5 +1,6 @@
-import { auth } from '@/lib/auth.ts';
+import { AuthService, authSymbol } from '@/lib/auth.ts';
 import { Context } from '@/lib/context.ts';
+import { di } from '@/lib/di.ts';
 import { implement, ORPCError } from '@orpc/server';
 import { contract } from '@template/contract';
 
@@ -13,6 +14,7 @@ const servicesMiddleware = base.middleware(async ({ next }) => {
 });
 
 const authenticatedMiddleware = base.middleware(async ({ context, next }) => {
+  const auth = di.get<AuthService>(authSymbol);
   const sessionData = await auth.api.getSession({
     headers: context.headers,
   });

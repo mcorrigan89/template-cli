@@ -18,8 +18,11 @@ import { notificationSubscription } from './subscription-routes.ts';
 
 const helloworld = oc.input(z.object({ name: z.string().optional() })).output(z.string());
 
+const healthy = oc.output(z.string());
+
 export const contract = {
   helloworld,
+  healthy,
   currentUser: {
     me: currentUser,
     uploadAvatar: uploadAvatarImage,

@@ -1,9 +1,21 @@
 import { createUserContext } from '@/lib/context.ts';
+import { dbSymbol, di } from '@/lib/di.ts';
+import { Database } from '@template/database';
 import { authenticatedRoute, base, publicRoute } from './base.ts';
 import { subscriptionRoutes } from './subscriptions.ts';
 
 const helloworld = publicRoute.helloworld.handler(async ({ input: { name } }) => {
   return name ? `Hello, ${name}!` : 'Hello, World!';
+});
+
+const healthy = publicRoute.healthy.handler(async () => {
+  const db = di.get<Database>(dbSymbol);
+  try {
+    await db.execute('SELECT 1'); // Simple query to check database connectivity
+    return 'OK';
+  } catch (error) {
+    return 'Database connection failed';
+  }
 });
 
 const currentUser = authenticatedRoute.currentUser.me.handler(async ({ context }) => {
@@ -147,6 +159,7 @@ const checkSlug = authenticatedRoute.organization.checkSlug.handler(async ({ inp
 
 export const routerImplementation = base.router({
   helloworld,
+  healthy,
   currentUser: {
     me: currentUser,
     uploadAvatar: uploadAvatarImage,

@@ -32,7 +32,6 @@
     "lint": "pnpm --color --parallel --filter './templates/*' lint",
     "start": "node bin/index.js",
     "prepare": "tsgo",
-    "prepare-templates": "node scripts/prepare-templates.js",
     "prepublishOnly": "npm run prepare-templates && npm run build",
     "dev:server": "pnpm --filter=server dev",
     "dev:web": "pnpm --filter=web dev",
